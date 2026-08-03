@@ -408,7 +408,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const response = await fetch('/api/parse-resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileData: base64, mimeType: file.type })
+        body: JSON.stringify({ fileData: base64, mimeType: file.type || 'application/pdf' })
       });
       if (response.ok) {
         const data = await response.json();
