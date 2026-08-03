@@ -153,18 +153,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         body: JSON.stringify({ phone: phoneNumber })
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data.smsSent) {
         setOtpResendCooldown(30);
         setOtpSecondsLeft(data.expiresInSeconds || 300);
-        setOtpInfo(
-          data.devOtp
-            ? `✅ OTP sent! Your verification code is: ${data.devOtp}`
-            : data.message || 'OTP sent to your mobile number.'
-        );
+        setOtpInfo('A 6-digit verification code has been sent to your mobile number.');
         return true;
       }
       // Show the error on the MAIN FORM (not just the hidden OTP screen)
-      const errMsg = data.error || 'Could not send OTP. Please try again.';
+      const errMsg = data.error || (res.ok ? 'SMS could not be delivered. Please check your phone number.' : 'Could not send OTP. Please try again.');
       setOtpError(errMsg);
       setErrorMessage(errMsg);
       return false;
@@ -514,7 +510,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
             <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Verify Your Mobile Number</h2>
             <p className="text-sm text-gray-600 mb-1">
-              We've sent a 6-digit verification code to
+              We've sent a 6-digit verification code via SMS to
             </p>
             <p className="text-sm font-bold text-gray-900 mb-8 font-mono tracking-wide">{maskedPhone}</p>
 

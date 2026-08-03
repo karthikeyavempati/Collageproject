@@ -520,12 +520,9 @@ export function createApp() {
     return res.json({
       message: smsSent
         ? `A 6-digit verification code was sent via SMS to ${phone}.`
-        : `Verification code generated for ${phone}.`,
+        : `Could not deliver SMS to ${phone}. Please check the number and try again.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
-      // Always include the OTP code in the response so it is shown on-screen
-      // as a fallback (college demo). When SMS is also sent, the user can use
-      // either the SMS or the on-screen code.
-      devOtp: otp,
+      smsSent,
     });
   });
 

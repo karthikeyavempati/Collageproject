@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import { InternshipRole } from '../types';
-import { 
-  TrendingUp, 
-  Sparkles, 
-  Search, 
-  Building2, 
-  MapPin, 
-  CheckCircle2, 
-  Bot, 
-  FileText, 
-  Award, 
+import {
+  TrendingUp,
+  Sparkles,
+  Search,
+  Building2,
+  MapPin,
+  CheckCircle2,
+  Bot,
+  FileText,
+  Award,
   ArrowRight,
-  SlidersHorizontal
+  ShieldCheck,
+  Clock,
+  Star
 } from 'lucide-react';
 
 interface StudentDashboardProps {
@@ -34,7 +36,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
   const topMatchRole = internships[0];
 
-  const filteredInternships = internships.filter(role => 
+  const filteredInternships = internships.filter(role =>
     role.title.toLowerCase().includes(search.toLowerCase()) ||
     role.company.toLowerCase().includes(search.toLowerCase()) ||
     role.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
@@ -43,98 +45,108 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const myAppliedRoles = internships.filter(role => appliedRoleIds.includes(role.id));
 
   return (
-    <div className="relative min-h-screen bg-black text-white pt-24 pb-24 md:pb-16 px-4 md:px-8 max-w-7xl mx-auto">
-      <div className="cinematic-header-bg" />
+    <div className="relative min-h-screen pt-24 pb-24 md:pb-16 px-4 md:px-8 max-w-7xl mx-auto">
+      <div className="absolute inset-0 z-0 bg-blue-50/50" />
+
+      {/* Government Banner Strip */}
+      <div className="relative z-10 flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 rounded-2xl shadow-sm w-max animate-in fade-in duration-500">
+        <span className="text-lg">🇮🇳</span>
+        <span className="text-xs font-bold text-blue-900">PM Internship Scheme</span>
+        <span className="text-xs text-gray-400">•</span>
+        <span className="text-xs text-gray-600">Ministry of Corporate Affairs</span>
+        <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">Active Portal</span>
+      </div>
+
       {/* Welcome Header */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div>
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-2">
-            Welcome back, {userName}.
+          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight mb-1">
+            Welcome back, {userName} 🎓
           </h2>
-          <p className="text-neutral-400 text-sm md:text-base">
-            Here is your live PM Internship Scheme search, profile matching score, and AI coaching progress.
+          <p className="text-sm text-gray-600">
+            Your live internship search, AI match scores &amp; application tracker.
           </p>
         </div>
-
         <button
           onClick={onOpenAICoach}
-          className="liquid-button rounded-full px-5 py-2.5 text-xs font-bold text-sky-300 flex items-center gap-2 self-start md:self-auto border border-sky-400/30 hover:text-white"
+          className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#005E93] text-white text-xs font-bold hover:bg-[#004A75] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-lg self-start md:self-auto"
         >
-          <Bot className="w-4 h-4 text-sky-400" />
+          <Bot className="w-4 h-4" />
           <span>Launch AI Match Coach</span>
+          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
         </button>
       </div>
 
-      {/* Top Bento Widgets Grid */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 mb-12">
-        {/* Profile Strength Widget */}
-        <div className="md:col-span-4 glass-panel rounded-3xl p-6 flex flex-col justify-between border border-white/10">
+      {/* Top Bento Grid */}
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 mb-10 animate-in fade-in duration-500">
+
+        {/* Profile Strength Card */}
+        <div className="md:col-span-4 bg-white border border-gray-200 shadow-sm rounded-3xl p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white">Profile Strength</h3>
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <h3 className="text-sm font-bold text-gray-900">Profile Strength</h3>
+              <div className="p-2 rounded-xl bg-green-50 border border-green-200">
+                <TrendingUp className="w-4 h-4 text-green-600" />
+              </div>
             </div>
-            <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
-              Your profile verification level is looking strong. Complete university document validation to unlock top 1% match scores.
+            <p className="text-xs text-gray-500 mb-5 leading-relaxed">
+              Your profile is strong. Complete academic document verification to unlock top 1% match scores.
             </p>
 
-            <div className="flex items-center gap-6 mb-6">
-              <div className="relative w-24 h-24 shrink-0">
+            <div className="flex items-center gap-4 mb-5">
+              <div className="relative w-20 h-20 shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="#e5e7eb" strokeWidth="8" />
                   <circle
                     cx="50" cy="50" r="42" fill="none"
-                    stroke="#34d399"
+                    stroke="#005E93"
                     strokeWidth="8"
                     strokeLinecap="round"
                     strokeDasharray={2 * Math.PI * 42}
                     strokeDashoffset={2 * Math.PI * 42 * (1 - 0.85)}
-                    style={{ filter: 'drop-shadow(0 0 6px rgba(52,211,153,0.6))', transition: 'stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)' }}
+                    style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1)' }}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-black text-white">85%</span>
+                  <span className="text-xl font-black text-blue-900">85%</span>
                 </div>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-neutral-400 block mb-1">
-                  Verified Completion
-                </span>
-                <span className="text-xs text-neutral-300">Academic documents pending</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500 block mb-1">Verified Completion</span>
+                <span className="text-xs text-gray-600">Academic documents pending</span>
               </div>
             </div>
 
-            <div className="w-full h-2.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-400 rounded-full w-[85%] shadow-[0_0_12px_rgba(52,211,153,0.5)]" />
+            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-[#005E93] rounded-full w-[85%] transition-all duration-700" />
             </div>
           </div>
 
-          <button className="mt-8 w-full py-3 rounded-full border border-white/20 text-xs font-bold text-white uppercase tracking-wider hover:bg-white/10 transition-colors">
+          <button className="mt-6 w-full py-2.5 rounded-2xl border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all">
             Update Academic Documents
           </button>
         </div>
 
-        {/* Top Match Widget */}
+        {/* Top AI Match Card */}
         {topMatchRole && (
-          <div className="md:col-span-8 glass-panel rounded-3xl p-6 md:p-8 flex flex-col md:flex-row relative overflow-hidden border border-white/10">
+          <div className="md:col-span-8 bg-white border border-gray-200 shadow-sm rounded-3xl p-6 md:p-8 flex flex-col md:flex-row relative overflow-hidden">
+            {/* Subtle blue accent */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
             <div className="md:w-3/5 z-10 flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-3 py-1 w-max mb-4 border border-white/15">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-300">
-                  #1 AI System Match
-                </span>
+              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 w-max mb-4">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-700">#1 AI System Match</span>
               </div>
 
-              <h3 className="text-2xl font-extrabold text-white mb-1">
-                {topMatchRole.title}
-              </h3>
-              <p className="text-xs text-neutral-400 mb-4 flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5 text-neutral-500" /> {topMatchRole.company} • {topMatchRole.location}
+              <h3 className="text-2xl font-extrabold text-gray-900 mb-1">{topMatchRole.title}</h3>
+              <p className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
+                <Building2 className="w-3.5 h-3.5" /> {topMatchRole.company} • {topMatchRole.location}
               </p>
 
               <div className="flex flex-wrap gap-1.5 mb-6">
                 {topMatchRole.tags.map(t => (
-                  <span key={t} className="bg-white/10 text-white px-2.5 py-1 rounded-full text-[11px] font-medium">
+                  <span key={t} className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
                     {t}
                   </span>
                 ))}
@@ -143,70 +155,77 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => onApply(topMatchRole)}
-                  className="liquid-button rounded-full px-6 py-2.5 text-xs font-bold text-white flex items-center gap-2"
+                  disabled={appliedRoleIds.includes(topMatchRole.id)}
+                  className="group px-6 py-2.5 rounded-2xl bg-[#005E93] text-white text-xs font-bold hover:bg-[#004A75] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-md flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                 >
-                  {appliedRoleIds.includes(topMatchRole.id) ? 'Applied' : 'Instant Apply'} <ArrowRight className="w-3.5 h-3.5" />
+                  {appliedRoleIds.includes(topMatchRole.id) ? 'Applied ✓' : 'Instant Apply'}
+                  {!appliedRoleIds.includes(topMatchRole.id) && <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />}
                 </button>
-                <span className="text-xs font-bold text-emerald-400">{topMatchRole.stipend}</span>
+                <span className="text-sm font-bold text-green-700">{topMatchRole.stipend}</span>
               </div>
             </div>
 
             <div className="hidden md:flex md:w-2/5 items-center justify-center p-4 z-10">
-              <div className="w-full h-full rounded-2xl glass-level-2 border border-white/20 p-6 flex flex-col items-center justify-center text-center">
-                <div className="text-5xl font-black text-sky-400 mb-1">98%</div>
-                <div className="text-xs uppercase tracking-wider font-bold text-neutral-300">Skill Fit Index</div>
-                <p className="text-[10px] text-neutral-400 mt-2">Verified against Academic Records & AI Portfolio Analysis</p>
+              <div className="w-full rounded-2xl bg-blue-50 border border-blue-200 p-6 flex flex-col items-center justify-center text-center">
+                <div className="text-5xl font-black text-[#005E93] mb-1">98%</div>
+                <div className="text-xs uppercase tracking-wider font-bold text-blue-800">Skill Fit Index</div>
+                <p className="text-[10px] text-gray-500 mt-2">Verified against Academic Records &amp; AI Portfolio Analysis</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Key Skills Mapped Widget */}
-        <div className="md:col-span-12 glass-panel rounded-3xl p-6 md:p-8 border border-white/10">
-          <h3 className="text-lg font-bold text-white mb-6">Your Verified Skill Mapping</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-400/20 text-sky-400">
+        {/* Verified Skill Mapping */}
+        <div className="md:col-span-12 bg-white border border-gray-200 shadow-sm rounded-3xl p-6 md:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-sm font-bold text-gray-900">Your Verified Skill Mapping</h3>
+            <div className="flex items-center gap-1.5 text-[10px] text-green-600 font-bold bg-green-50 border border-green-200 px-3 py-1 rounded-full">
+              <ShieldCheck className="w-3.5 h-3.5" /> AI Verified
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-blue-50 border border-blue-100">
+              <div className="p-3 rounded-xl bg-blue-100 border border-blue-200 text-blue-700 shrink-0">
                 <Award className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white mb-0.5">Product & Data Analysis</h4>
-                <p className="text-xs text-neutral-400">Strong alignment with 80% of open roles in your area.</p>
+                <h4 className="text-sm font-bold text-gray-900 mb-0.5">Product &amp; Data Analysis</h4>
+                <p className="text-xs text-gray-500">Strong alignment with 80% of open roles in your area.</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-              <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-400/20 text-purple-400">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-purple-50 border border-purple-100">
+              <div className="p-3 rounded-xl bg-purple-100 border border-purple-200 text-purple-700 shrink-0">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white mb-0.5">Cross-functional Comms</h4>
-                <p className="text-xs text-neutral-400">Highlighted in your recent AI mock interview evaluation.</p>
+                <h4 className="text-sm font-bold text-gray-900 mb-0.5">Cross-functional Comms</h4>
+                <p className="text-xs text-gray-500">Highlighted in your recent AI mock interview evaluation.</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-400/20 text-emerald-400">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-green-50 border border-green-100">
+              <div className="p-3 rounded-xl bg-green-100 border border-green-200 text-green-700 shrink-0">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-white mb-0.5">System Architecture</h4>
-                <p className="text-xs text-neutral-400">Recommended focus area to unlock tier-1 technical roles.</p>
+                <h4 className="text-sm font-bold text-gray-900 mb-0.5">System Architecture</h4>
+                <p className="text-xs text-gray-500">Recommended focus area to unlock tier-1 technical roles.</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Tabs Navigation */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
-        <div className="flex gap-4">
+      {/* Tabs + Search */}
+      <div className="relative z-10 flex items-center justify-between border-b border-gray-200 pb-4 mb-6">
+        <div className="flex gap-6">
           <button
             onClick={() => setActiveTab('openings')}
             className={`text-sm font-bold pb-2 transition-all border-b-2 ${
               activeTab === 'openings'
-                ? 'border-white text-white'
-                : 'border-transparent text-neutral-400 hover:text-neutral-200'
+                ? 'border-[#005E93] text-[#005E93]'
+                : 'border-transparent text-gray-400 hover:text-gray-700'
             }`}
           >
             All Recommended Roles ({internships.length})
@@ -215,137 +234,135 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             onClick={() => setActiveTab('my-applications')}
             className={`text-sm font-bold pb-2 transition-all border-b-2 ${
               activeTab === 'my-applications'
-                ? 'border-white text-white'
-                : 'border-transparent text-neutral-400 hover:text-neutral-200'
+                ? 'border-[#005E93] text-[#005E93]'
+                : 'border-transparent text-gray-400 hover:text-gray-700'
             }`}
           >
             My Applications ({appliedRoleIds.length})
           </button>
         </div>
 
-        {/* Search */}
         <div className="relative w-64 hidden sm:block">
-          <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Filter roles..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/30"
+            className="w-full bg-white border border-gray-300 rounded-xl pl-9 pr-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
           />
         </div>
       </div>
 
-      {/* Tab Contents */}
-      {activeTab === 'openings' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInternships.map((role) => {
-            const isApplied = appliedRoleIds.includes(role.id);
+      {/* Tab Content */}
+      <div className="relative z-10">
+        {activeTab === 'openings' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredInternships.map((role) => {
+              const isApplied = appliedRoleIds.includes(role.id);
+              return (
+                <div
+                  key={role.id}
+                  className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full">
+                        {role.stipend}
+                      </span>
+                      {role.matchScore && (
+                        <div className="flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                          <Star className="w-3 h-3" />
+                          {role.matchScore}% AI Fit
+                        </div>
+                      )}
+                    </div>
 
-            return (
-              <div
-                key={role.id}
-                className="glass-panel rounded-2xl p-6 flex flex-col justify-between border border-white/10 hover:border-white/25 transition-all"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2.5 py-0.5 rounded-full border border-emerald-400/20">
-                      {role.stipend}
+                    <h3 className="text-base font-bold text-gray-900 mb-1">{role.title}</h3>
+                    <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5" /> {role.company}
+                    </p>
+
+                    <p className="text-xs text-gray-600 line-clamp-2 mb-4">{role.description}</p>
+
+                    <div className="flex flex-wrap gap-1.5 mb-5">
+                      {role.tags.map(t => (
+                        <span key={t} className="px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100 text-[10px] text-blue-700 font-medium">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" /> {role.location}
                     </span>
-                    {role.matchScore && (
-                      <span className="text-xs font-semibold text-sky-300">
-                        {role.matchScore}% AI Fit
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-lg font-bold text-white mb-1">{role.title}</h3>
-                  <p className="text-xs text-neutral-400 mb-3 flex items-center gap-1">
-                    <Building2 className="w-3.5 h-3.5" /> {role.company}
-                  </p>
-
-                  <p className="text-xs text-neutral-300 line-clamp-2 mb-4">
-                    {role.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-1.5 mb-6">
-                    {role.tags.map(t => (
-                      <span key={t} className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-neutral-300">
-                        {t}
-                      </span>
-                    ))}
+                    <button
+                      disabled={isApplied}
+                      onClick={() => onApply(role)}
+                      className={`rounded-xl px-4 py-1.5 text-xs font-bold transition-all ${
+                        isApplied
+                          ? 'bg-green-50 text-green-700 border border-green-200 flex items-center gap-1 cursor-default'
+                          : 'bg-[#005E93] text-white hover:bg-[#004A75] hover:-translate-y-0.5 active:translate-y-0 shadow-sm'
+                      }`}
+                    >
+                      {isApplied ? (
+                        <><CheckCircle2 className="w-3.5 h-3.5" /> Applied</>
+                      ) : 'Apply Now'}
+                    </button>
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-                  <span className="text-xs text-neutral-400 flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5" /> {role.location}
-                  </span>
-
-                  <button
-                    disabled={isApplied}
-                    onClick={() => onApply(role)}
-                    className={`rounded-full px-4 py-1.5 text-xs font-bold transition-all ${
-                      isApplied
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1 cursor-default'
-                        : 'liquid-button text-white'
-                    }`}
-                  >
-                    {isApplied ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Applied
-                      </>
-                    ) : (
-                      'Apply Now'
-                    )}
-                  </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {myAppliedRoles.length === 0 ? (
+              <div className="bg-white border border-gray-200 shadow-sm rounded-3xl p-12 text-center">
+                <div className="w-16 h-16 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-blue-600" />
                 </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">No Applications Yet</h3>
+                <p className="text-xs text-gray-500 mb-6">Browse open roles and apply with 1-click verified credentials.</p>
+                <button
+                  onClick={() => setActiveTab('openings')}
+                  className="px-6 py-2.5 rounded-2xl bg-[#005E93] text-white text-xs font-bold hover:bg-[#004A75] transition-all shadow-md"
+                >
+                  Browse Openings
+                </button>
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {myAppliedRoles.length === 0 ? (
-            <div className="glass-panel rounded-3xl p-12 text-center border border-white/10">
-              <FileText className="w-12 h-12 text-neutral-500 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-white mb-1">No Applications Submitted Yet</h3>
-              <p className="text-xs text-neutral-400 mb-6">Browse open roles and apply with 1-click verified credentials.</p>
-              <button
-                onClick={() => setActiveTab('openings')}
-                className="liquid-button rounded-full px-6 py-2.5 text-xs font-bold text-white"
-              >
-                Browse Openings
-              </button>
-            </div>
-          ) : (
-            myAppliedRoles.map((role) => (
-              <div
-                key={role.id}
-                className="glass-panel rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-white/10"
-              >
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-bold bg-emerald-400/10 px-2.5 py-0.5 rounded-full border border-emerald-400/20 mb-2">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Verified Submission
+            ) : (
+              myAppliedRoles.map((role) => (
+                <div
+                  key={role.id}
+                  className="bg-white border border-gray-200 shadow-sm rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-md transition-all"
+                >
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 text-xs text-green-700 font-bold bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full mb-2">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Verified Submission
+                    </div>
+                    <h3 className="text-base font-bold text-gray-900">{role.title}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">{role.company} • {role.location}</p>
                   </div>
-                  <h3 className="text-lg font-bold text-white">{role.title}</h3>
-                  <p className="text-xs text-neutral-400 mt-0.5">{role.company} • {role.location}</p>
-                </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-xs font-semibold text-white">{role.stipend}</div>
-                    <div className="text-[10px] text-neutral-400">Status: Under Review</div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-gray-900">{role.stipend}</div>
+                      <div className="text-[10px] text-gray-500 flex items-center gap-1 justify-end mt-0.5">
+                        <Clock className="w-3 h-3" /> Under Review
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-bold text-blue-700">
+                      Active
+                    </span>
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-white/10 text-xs font-bold text-neutral-200">
-                    Active
-                  </span>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
