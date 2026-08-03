@@ -478,7 +478,7 @@ export function createApp() {
   // --- OTP: PHONE VERIFICATION ---
   // Required before /api/login will accept a login or signup - see below.
 
-  app.post("/api/otp/send", (req, res) => {
+  app.post("/api/otp/send", async (req, res) => {
     const { phone } = req.body || {};
     if (!phone || !isValidPhone(phone)) {
       return res.status(400).json({ error: "Please enter a valid mobile number (e.g. +91 98765 43210)." });
