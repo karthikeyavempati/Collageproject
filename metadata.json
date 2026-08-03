@@ -1,0 +1,6 @@
+{
+  "name": "PM Internship Scheme",
+  "description": "Official portal for the PM Internship Scheme featuring applicant analytics, employer recruitment dashboard, candidate matching, and public service internship applications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
