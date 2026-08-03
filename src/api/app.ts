@@ -7,7 +7,9 @@ import { GoogleGenAI } from "@google/genai";
 // pdf-parse v2.x is a full rewrite of the package: it no longer exports a
 // default function like v1 did. It exports a `PDFParse` class instead,
 // used as `new PDFParse({ data }).getText()`.
-import { PDFParse } from "pdf-parse";
+// pdf-parse is lazy-loaded inside /api/parse-resume only.
+// Importing it at the top level causes pdfjs-dist to load browser-only globals
+// (DOMMatrix, ImageData, Path2D) which crash the Vercel Node.js runtime.
 import {
   INITIAL_INTERNSHIPS,
   INITIAL_CANDIDATES,
@@ -873,7 +875,10 @@ export function createApp() {
 
     const parseWithGroq = async () => {
       let resumeText = "";
-      let parser: PDFParse | null = null;
+      // Lazy-load pdf-parse here so the top-level import doesn't crash the
+      // serverless function startup with pdfjs-dist's browser-only globals.
+      const { PDFParse } = await import("pdf-parse");
+      let parser: InstanceType<typeof PDFParse> | null = null;
       try {
         const buffer = Buffer.from(base64Data, "base64");
         parser = new PDFParse({ data: buffer });
