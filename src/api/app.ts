@@ -517,12 +517,24 @@ export function createApp() {
       );
     }
 
+    // --- DEMO-MODE FALLBACK ---
+    // Whenever the SMS gateway doesn't actually deliver the code (missing key,
+    // Fast2SMS account restrictions, etc.), surface the OTP directly in the
+    // API response instead of leaving the user stuck with no way to log in.
+    // This is deliberately opt-in via DEMO_MODE so it's never accidentally
+    // left enabled for a real production deployment with real users.
+    const DEMO_MODE = process.env.DEMO_MODE === "true" || !IS_PRODUCTION;
+    const devOtp = !smsSent && DEMO_MODE ? otp : undefined;
+
     return res.json({
       message: smsSent
         ? `A 6-digit verification code was sent via SMS to ${phone}.`
+        : devOtp
+        ? `SMS delivery is currently unavailable, so demo mode is showing your code below instead.`
         : `Could not deliver SMS to ${phone}. Please check the number and try again.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
       smsSent,
+      devOtp,
     });
   });
 

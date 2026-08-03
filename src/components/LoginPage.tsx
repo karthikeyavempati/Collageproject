@@ -189,6 +189,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setOtpInfo('A 6-digit verification code has been sent to your mobile number.');
         return true;
       }
+      // Demo-mode fallback: SMS delivery failed, but the server included the
+      // code directly so the login flow stays testable. Show it clearly
+      // labeled so it's never mistaken for a real SMS delivery.
+      if (res.ok && data.devOtp) {
+        setOtpResendCooldown(30);
+        setOtpSecondsLeft(data.expiresInSeconds || 300);
+        setOtpInfo(`Demo Mode — SMS unavailable. Your verification code is: ${data.devOtp}`);
+        return true;
+      }
       // Show the error on the MAIN FORM (not just the hidden OTP screen)
       const errMsg = data.error || (res.ok ? 'SMS could not be delivered. Please check your phone number.' : 'Could not send OTP. Please try again.');
       setOtpError(errMsg);
