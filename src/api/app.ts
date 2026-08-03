@@ -544,23 +544,24 @@ export function createApp() {
     const otp = generateOtp();
     otpStore.set(key, { otp, expiresAt: now + OTP_TTL_MS, attempts: 0, lastSentAt: now });
 
-    let emailSent = false;
-    if (EMAIL_ENABLED) {
-      emailSent = await sendEmailOtp(email, otp);
+    if (!EMAIL_ENABLED) {
+      return res.status(400).json({
+        error: "Email server is not configured on Vercel. Please set SMTP_USER and SMTP_PASS (or RESEND_API_KEY) in Vercel Environment Variables to send real emails.",
+      });
     }
 
-    // Only surface devOtp on screen IF real email delivery is NOT configured
-    const devOtp = !EMAIL_ENABLED ? otp : undefined;
+    const emailSent = await sendEmailOtp(email, otp);
+
+    if (!emailSent) {
+      return res.status(500).json({
+        error: `Failed to deliver email to ${email}. Please check your SMTP credentials in Vercel settings.`,
+      });
+    }
 
     return res.json({
-      message: emailSent
-        ? `A 6-digit verification code was sent to ${email}. Please check your email inbox.`
-        : devOtp
-        ? `Demo Mode — Verification code sent to ${email}. Your code is: ${devOtp}`
-        : `Failed to deliver email to ${email}. Please check server email settings.`,
+      message: `A 6-digit verification code was sent to ${email}. Please check your email inbox.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
-      smsSent: emailSent,
-      devOtp,
+      smsSent: true,
     });
   });
 

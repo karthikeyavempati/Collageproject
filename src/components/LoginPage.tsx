@@ -183,12 +183,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         body: JSON.stringify({ email: emailAddress })
       });
       const data = await res.json();
-      if (res.ok && (data.devOtp || data.message)) {
+      if (res.ok && data.message) {
         setOtpResendCooldown(30);
         setOtpSecondsLeft(data.expiresInSeconds || 300);
-        setOtpInfo(data.devOtp 
-          ? `Demo Mode — Verification code sent to ${emailAddress}. Your code is: ${data.devOtp}`
-          : `A 6-digit verification code has been sent to ${emailAddress}.`);
+        setOtpInfo(`A 6-digit verification code has been sent to ${emailAddress}. Please check your email inbox.`);
         return true;
       }
       // Show the error on the MAIN FORM (not just the hidden OTP screen)
