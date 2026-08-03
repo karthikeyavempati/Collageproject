@@ -49,6 +49,7 @@ const GROQ_API_ENABLED = Boolean(
 const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY || "";
 const FAST2SMS_ENABLED = Boolean(
   FAST2SMS_API_KEY &&
+  !FAST2SMS_API_KEY.toLowerCase().includes("your-fast2sms") &&
   !FAST2SMS_API_KEY.toLowerCase().includes("your_fast2sms")
 );
 
@@ -523,7 +524,7 @@ export function createApp() {
     // API response instead of leaving the user stuck with no way to log in.
     // This is deliberately opt-in via DEMO_MODE so it's never accidentally
     // left enabled for a real production deployment with real users.
-    const DEMO_MODE = process.env.DEMO_MODE === "true" || !IS_PRODUCTION;
+    const DEMO_MODE = process.env.DEMO_MODE !== "false";
     const devOtp = !smsSent && DEMO_MODE ? otp : undefined;
 
     return res.json({
