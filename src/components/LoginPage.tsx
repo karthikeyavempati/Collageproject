@@ -142,6 +142,36 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     return /^(\+91|91)?[6-9]\d{9}$/.test(normalized) || /^\+[1-9]\d{7,14}$/.test(normalized);
   };
 
+  // Helper to split phone into country code and body
+  const parsePhone = (rawPhone: string) => {
+    const trimmed = (rawPhone || '').trim();
+    if (trimmed.startsWith('+91')) {
+      return { code: '+91', body: trimmed.substring(3).trim() };
+    } else if (trimmed.startsWith('+1')) {
+      return { code: '+1', body: trimmed.substring(2).trim() };
+    } else if (trimmed.startsWith('+44')) {
+      return { code: '+44', body: trimmed.substring(3).trim() };
+    }
+    // Default fallback: if it doesn't match a known country code, guess by space
+    const spaceIndex = trimmed.indexOf(' ');
+    if (trimmed.startsWith('+') && spaceIndex > 0) {
+      return { code: trimmed.substring(0, spaceIndex), body: trimmed.substring(spaceIndex + 1) };
+    }
+    return { code: '+91', body: trimmed }; // default to +91
+  };
+
+  const { code: currentCode, body: currentBody } = parsePhone(phone);
+
+  const handlePhoneBodyChange = (value: string) => {
+    // Only allow digits up to 10
+    const digits = value.replace(/\D/g, '').slice(0, 10);
+    setPhone(`${currentCode} ${digits}`);
+  };
+
+  const handleCountryCodeChange = (newCode: string) => {
+    setPhone(`${newCode} ${currentBody}`);
+  };
+
   // Sends (or re-sends) an OTP for a given phone number. Returns whether it succeeded.
   const dispatchOtp = async (phoneNumber: string): Promise<boolean> => {
     setOtpError(null);
@@ -886,15 +916,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <span>Mobile Number</span>
                   <span className="text-[10px] text-gray-600 font-mono">OTP will be sent here</span>
                 </label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
-                  disabled={rateLimitInfo.isBlocked}
-                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50"
-                />
+                <div className="flex rounded-xl border border-gray-300 bg-white overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
+                  <select
+                    value={currentCode}
+                    onChange={(e) => handleCountryCodeChange(e.target.value)}
+                    disabled={rateLimitInfo.isBlocked}
+                    className="bg-gray-50 border-r border-gray-300 text-sm font-bold text-gray-700 px-3 py-3 focus:outline-none cursor-pointer"
+                  >
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                  </select>
+                  <input
+                    type="tel"
+                    required
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={10}
+                    value={currentBody}
+                    onChange={(e) => handlePhoneBodyChange(e.target.value)}
+                    placeholder="98765 43210"
+                    disabled={rateLimitInfo.isBlocked}
+                    className="flex-1 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none disabled:opacity-50 font-mono tracking-wider"
+                  />
+                </div>
               </div>
 
               {/* Email Input */}
