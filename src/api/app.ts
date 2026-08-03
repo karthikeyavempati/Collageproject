@@ -2,6 +2,7 @@ import express from "express";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
 import { GoogleGenAI } from "@google/genai";
 // npm install pdf-parse
 // pdf-parse v2.x is a full rewrite of the package: it no longer exports a
@@ -40,54 +41,94 @@ const GROQ_API_ENABLED = Boolean(
 );
 
 // ---------------------------------------------------------------------------
-// FAST2SMS CONFIG (OTP delivery for Indian mobile numbers)
+// EMAIL OTP DISPATCH CONFIG (SMTP / Gmail / Resend API)
 // ---------------------------------------------------------------------------
-// Sign up free at https://www.fast2sms.com → Dashboard → Dev API Key.
-// Add FAST2SMS_API_KEY to your Vercel environment variables.
-// Without it in production the server logs a warning but still falls back to
-// embedding the OTP in the API response so demos remain testable.
-const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY || "";
-const FAST2SMS_ENABLED = Boolean(
-  FAST2SMS_API_KEY &&
-  !FAST2SMS_API_KEY.toLowerCase().includes("your-fast2sms") &&
-  !FAST2SMS_API_KEY.toLowerCase().includes("your_fast2sms")
+const SMTP_USER = process.env.SMTP_USER || process.env.GMAIL_USER || "";
+const SMTP_PASS = process.env.SMTP_PASS || process.env.GMAIL_PASS || "";
+const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
+const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+
+const EMAIL_ENABLED = Boolean(
+  (SMTP_USER && SMTP_PASS && !SMTP_USER.includes("your-email")) ||
+  (RESEND_API_KEY && !RESEND_API_KEY.includes("your_resend"))
 );
 
-/**
- * Sends an OTP SMS via Fast2SMS's dedicated OTP route.
- * Strips the country code (Fast2SMS accepts 10-digit Indian numbers only).
- * Returns true on success, false on any error (which is logged).
- */
-async function sendSmsViaFast2Sms(phone: string, otp: string): Promise<boolean> {
-  // Fast2SMS needs the 10-digit number without +91 / 91 prefix.
-  const digits = normalizePhone(phone).replace(/\D/g, "");
-  const tenDigit = digits.length > 10 ? digits.slice(-10) : digits;
+async function sendEmailOtp(toEmail: string, otp: string): Promise<boolean> {
+  const subject = `Your OTP Verification Code - PM Internship Scheme: ${otp}`;
+  const html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <h2 style="color: #005E93; margin: 0; font-size: 22px;">PM Internship Scheme</h2>
+        <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Ministry of Corporate Affairs</p>
+      </div>
+      <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 24px;">
+        <p style="color: #334155; font-size: 14px; margin-bottom: 12px;">Your 6-digit verification code is:</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #005E93; font-family: monospace;">${otp}</div>
+        <p style="color: #94a3b8; font-size: 12px; margin-top: 12px;">This code will expire in 5 minutes.</p>
+      </div>
+      <p style="color: #64748b; font-size: 12px; text-align: center; margin: 0;">
+        If you did not request this verification code, please ignore this email.
+      </p>
+    </div>
+  `;
 
-  try {
-    const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
-      method: "POST",
-      headers: {
-        authorization: FAST2SMS_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        route: "otp",
-        variables_values: otp,
-        numbers: tenDigit,
-      }),
-    });
+  // 1. Resend HTTP API
+  if (RESEND_API_KEY && !RESEND_API_KEY.includes("your_resend")) {
+    try {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "PM Internship Portal <onboarding@resend.dev>",
+          to: toEmail,
+          subject,
+          html,
+        }),
+      });
+      const data = (await res.json()) as any;
+      if (res.ok && data.id) {
+        console.log(`[OTP/Email] Email dispatched via Resend to ${toEmail}:`, data.id);
+        return true;
+      }
+      console.error("[OTP/Email] Resend API failed:", data);
+    } catch (err) {
+      console.error("[OTP/Email] Resend network error:", err);
+    }
+  }
 
-    const data = await response.json() as any;
-    if (!response.ok || data.return === false) {
-      console.error("[OTP/Fast2SMS] SMS failed:", data);
+  // 2. Nodemailer SMTP (Gmail / Custom SMTP)
+  if (SMTP_USER && SMTP_PASS && !SMTP_USER.includes("your-email")) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465,
+        auth: {
+          user: SMTP_USER,
+          pass: SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"PM Internship Scheme" <${SMTP_USER}>`,
+        to: toEmail,
+        subject,
+        html,
+      });
+
+      console.log(`[OTP/Email] Email dispatched via SMTP to ${toEmail}`);
+      return true;
+    } catch (err) {
+      console.error("[OTP/Email] SMTP error while sending email:", err);
       return false;
     }
-    console.log(`[OTP/Fast2SMS] SMS dispatched to ${tenDigit}:`, data);
-    return true;
-  } catch (err) {
-    console.error("[OTP/Fast2SMS] Network error while sending SMS:", err);
-    return false;
   }
+
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -503,15 +544,22 @@ export function createApp() {
     const otp = generateOtp();
     otpStore.set(key, { otp, expiresAt: now + OTP_TTL_MS, attempts: 0, lastSentAt: now });
 
-    console.log(`[OTP] Email verification code for ${email}: ${otp} (expires in ${OTP_TTL_MS / 60000} min)`);
+    let emailSent = false;
+    if (EMAIL_ENABLED) {
+      emailSent = await sendEmailOtp(email, otp);
+    }
 
-    const DEMO_MODE = process.env.DEMO_MODE !== "false";
-    const devOtp = DEMO_MODE ? otp : undefined;
+    // Only surface devOtp on screen IF real email delivery is NOT configured
+    const devOtp = !EMAIL_ENABLED ? otp : undefined;
 
     return res.json({
-      message: `A 6-digit verification code was sent to ${email}.`,
+      message: emailSent
+        ? `A 6-digit verification code was sent to ${email}. Please check your email inbox.`
+        : devOtp
+        ? `Demo Mode — Verification code sent to ${email}. Your code is: ${devOtp}`
+        : `Failed to deliver email to ${email}. Please check server email settings.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
-      smsSent: false,
+      smsSent: emailSent,
       devOtp,
     });
   });
