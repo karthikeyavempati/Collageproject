@@ -158,15 +158,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setOtpSecondsLeft(data.expiresInSeconds || 300);
         setOtpInfo(
           data.devOtp
-            ? `${data.message} (Dev mode - your code is ${data.devOtp})`
+            ? `✅ OTP sent! Your verification code is: ${data.devOtp}`
             : data.message || 'OTP sent to your mobile number.'
         );
         return true;
       }
-      setOtpError(data.error || 'Could not send OTP. Please try again.');
+      // Show the error on the MAIN FORM (not just the hidden OTP screen)
+      const errMsg = data.error || 'Could not send OTP. Please try again.';
+      setOtpError(errMsg);
+      setErrorMessage(errMsg);
       return false;
     } catch (err) {
-      setOtpError('Network error while sending OTP. Please try again.');
+      const errMsg = 'Network error while sending OTP. Please check your connection and try again.';
+      setOtpError(errMsg);
+      setErrorMessage(errMsg);
       return false;
     } finally {
       setIsSendingOtp(false);
@@ -188,6 +193,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setOtp('');
     setOtpInfo(null);
     setOtpError(null);
+    setErrorMessage(null);   // Clear any stale form-level errors before starting
     const sent = await dispatchOtp(phone);
     if (sent) {
       setPendingPayload(payload);

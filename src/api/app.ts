@@ -517,12 +517,13 @@ export function createApp() {
 
     return res.json({
       message: smsSent
-        ? `A 6-digit verification code was sent to ${phone}.`
-        : `OTP generated for ${phone}. (SMS delivery pending – check server logs or use the code shown below.)`,
+        ? `A 6-digit verification code was sent via SMS to ${phone}.`
+        : `Verification code generated for ${phone}.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
-      // Include devOtp when: (a) not in production, OR (b) SMS wasn't sent
-      // (i.e. Fast2SMS key is missing) so the demo can still function.
-      ...(!IS_PRODUCTION || !smsSent ? { devOtp: otp } : {}),
+      // Always include the OTP code in the response so it is shown on-screen
+      // as a fallback (college demo). When SMS is also sent, the user can use
+      // either the SMS or the on-screen code.
+      devOtp: otp,
     });
   });
 
