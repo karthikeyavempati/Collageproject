@@ -172,34 +172,27 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setPhone(`${newCode} ${currentBody}`);
   };
 
-  // Sends (or re-sends) an OTP for a given phone number. Returns whether it succeeded.
-  const dispatchOtp = async (phoneNumber: string): Promise<boolean> => {
+  // Sends (or re-sends) an OTP for a given email address. Returns whether it succeeded.
+  const dispatchOtp = async (emailAddress: string): Promise<boolean> => {
     setOtpError(null);
     setIsSendingOtp(true);
     try {
       const res = await fetch('/api/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phoneNumber })
+        body: JSON.stringify({ email: emailAddress })
       });
       const data = await res.json();
-      if (res.ok && data.smsSent) {
+      if (res.ok && (data.devOtp || data.message)) {
         setOtpResendCooldown(30);
         setOtpSecondsLeft(data.expiresInSeconds || 300);
-        setOtpInfo('A 6-digit verification code has been sent to your mobile number.');
-        return true;
-      }
-      // Demo-mode fallback: SMS delivery failed, but the server included the
-      // code directly so the login flow stays testable. Show it clearly
-      // labeled so it's never mistaken for a real SMS delivery.
-      if (res.ok && data.devOtp) {
-        setOtpResendCooldown(30);
-        setOtpSecondsLeft(data.expiresInSeconds || 300);
-        setOtpInfo(`Demo Mode — SMS unavailable. Your verification code is: ${data.devOtp}`);
+        setOtpInfo(data.devOtp 
+          ? `Demo Mode — Verification code sent to ${emailAddress}. Your code is: ${data.devOtp}`
+          : `A 6-digit verification code has been sent to ${emailAddress}.`);
         return true;
       }
       // Show the error on the MAIN FORM (not just the hidden OTP screen)
-      const errMsg = data.error || (res.ok ? 'SMS could not be delivered. Please check your phone number.' : 'Could not send OTP. Please try again.');
+      const errMsg = data.error || 'Could not send verification OTP. Please check your email and try again.';
       setOtpError(errMsg);
       setErrorMessage(errMsg);
       return false;
@@ -229,7 +222,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setOtpInfo(null);
     setOtpError(null);
     setErrorMessage(null);   // Clear any stale form-level errors before starting
-    const sent = await dispatchOtp(phone);
+    const sent = await dispatchOtp(email);
     if (sent) {
       setPendingPayload(payload);
       setAuthStage('otp');
@@ -253,7 +246,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const handleResendOtp = async () => {
     if (!pendingPayload || otpResendCooldown > 0) return;
     setOtp('');
-    await dispatchOtp(pendingPayload.phone);
+    await dispatchOtp(pendingPayload.email);
   };
 
   // Step 2: verify the OTP, and ONLY on success actually execute the login
@@ -261,7 +254,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const handleVerifyOtpAndLogin = async () => {
     if (!pendingPayload) return;
     if (!otp || otp.trim().length !== 6) {
-      setOtpError('Enter the 6-digit code sent to your phone.');
+      setOtpError('Enter the 6-digit code sent to your email.');
       return;
     }
 
@@ -271,7 +264,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const verifyRes = await fetch('/api/otp/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: pendingPayload.phone, otp: otp.trim() })
+        body: JSON.stringify({ email: pendingPayload.email, otp: otp.trim() })
       });
       const verifyData = await verifyRes.json();
 
@@ -547,11 +540,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <ShieldCheck className="w-7 h-7 text-green-600" />
             </div>
 
-            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Verify Your Mobile Number</h2>
+            <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Verify Your Email Address</h2>
             <p className="text-sm text-gray-600 mb-1">
-              We've sent a 6-digit verification code via SMS to
+              We've sent a 6-digit verification code to
             </p>
-            <p className="text-sm font-bold text-gray-900 mb-8 font-mono tracking-wide">{maskedPhone}</p>
+            <p className="text-sm font-bold text-gray-900 mb-8 font-mono tracking-wide">{pendingPayload.email}</p>
 
             {otpInfo && (
               <div className="p-3 rounded-2xl mb-6 bg-green-50 border border-green-200 text-green-800 text-xs flex items-start gap-2 text-left">
@@ -1034,13 +1027,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </>
                 ) : (
                   <>
-                    <span>Continue & Verify Mobile Number</span>
+                    <span>Continue & Verify Email Address</span>
                     <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </>
                 )}
               </button>
               <p className="text-center text-[11px] text-gray-500 -mt-1">
-                We'll text a 6-digit code to your phone. Your {isSignUp ? 'account is not created' : 'login is not completed'} until it's verified.
+                We'll send a 6-digit code to your email address. Your {isSignUp ? 'account is not created' : 'login is not completed'} until it's verified.
               </p>
             </form>
 

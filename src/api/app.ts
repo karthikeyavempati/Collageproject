@@ -316,7 +316,11 @@ const MAX_OTP_ATTEMPTS = 5;
 const OTP_RESEND_COOLDOWN_MS = 30 * 1000;
 
 const otpStore = new Map<string, { otp: string; expiresAt: number; attempts: number; lastSentAt: number }>();
-const verifiedPhones = new Map<string, number>();
+const verifiedEmails = new Map<string, number>();
+
+function emailKey(email: string): string {
+  return (email || "").trim().toLowerCase();
+}
 
 function generateOtp(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -330,8 +334,8 @@ const sweepIntervalHandle = setInterval(() => {
   for (const [key, record] of otpStore) {
     if (now > record.expiresAt) otpStore.delete(key);
   }
-  for (const [key, verifiedAt] of verifiedPhones) {
-    if (now - verifiedAt > OTP_VERIFIED_TTL_MS) verifiedPhones.delete(key);
+  for (const [key, verifiedAt] of verifiedEmails) {
+    if (now - verifiedAt > OTP_VERIFIED_TTL_MS) verifiedEmails.delete(key);
   }
   for (const [ip, attempts] of loginAttemptsMap) {
     const filtered = attempts.filter((t) => t > now - RATE_LIMIT_WINDOW_MS);
@@ -478,16 +482,16 @@ export function createApp() {
     res.json({ status: "ok", timestamp: new Date().toISOString(), aiModel: AI_MODEL });
   });
 
-  // --- OTP: PHONE VERIFICATION ---
+  // --- OTP: EMAIL VERIFICATION ---
   // Required before /api/login will accept a login or signup - see below.
 
   app.post("/api/otp/send", async (req, res) => {
-    const { phone } = req.body || {};
-    if (!phone || !isValidPhone(phone)) {
-      return res.status(400).json({ error: "Please enter a valid mobile number (e.g. +91 98765 43210)." });
+    const { email } = req.body || {};
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: "Please enter a genuine, valid email address." });
     }
 
-    const key = phoneKey(phone);
+    const key = emailKey(email);
     const now = Date.now();
     const existing = otpStore.get(key);
 
@@ -499,60 +503,33 @@ export function createApp() {
     const otp = generateOtp();
     otpStore.set(key, { otp, expiresAt: now + OTP_TTL_MS, attempts: 0, lastSentAt: now });
 
-    // --- SMS DISPATCH ---
-    let smsSent = false;
-    if (FAST2SMS_ENABLED) {
-      // Production path: send a real SMS via Fast2SMS.
-      smsSent = await sendSmsViaFast2Sms(phone, otp);
-      if (!smsSent) {
-        console.warn(
-          "[OTP] Fast2SMS dispatch failed. OTP is stored but was not delivered via SMS."
-        );
-      }
-    } else {
-      // Fast2SMS key not configured - log to server console (visible in
-      // Vercel function logs) and fall through to include devOtp below.
-      console.warn(
-        `[OTP] FAST2SMS_API_KEY not set. OTP for ${phone}: ${otp} (expires in ${OTP_TTL_MS / 60000} min). ` +
-        "Add FAST2SMS_API_KEY to your Vercel env vars to enable real SMS delivery."
-      );
-    }
+    console.log(`[OTP] Email verification code for ${email}: ${otp} (expires in ${OTP_TTL_MS / 60000} min)`);
 
-    // --- DEMO-MODE FALLBACK ---
-    // Whenever the SMS gateway doesn't actually deliver the code (missing key,
-    // Fast2SMS account restrictions, etc.), surface the OTP directly in the
-    // API response instead of leaving the user stuck with no way to log in.
-    // This is deliberately opt-in via DEMO_MODE so it's never accidentally
-    // left enabled for a real production deployment with real users.
     const DEMO_MODE = process.env.DEMO_MODE !== "false";
-    const devOtp = !smsSent && DEMO_MODE ? otp : undefined;
+    const devOtp = DEMO_MODE ? otp : undefined;
 
     return res.json({
-      message: smsSent
-        ? `A 6-digit verification code was sent via SMS to ${phone}.`
-        : devOtp
-        ? `SMS delivery is currently unavailable, so demo mode is showing your code below instead.`
-        : `Could not deliver SMS to ${phone}. Please check the number and try again.`,
+      message: `A 6-digit verification code was sent to ${email}.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
-      smsSent,
+      smsSent: false,
       devOtp,
     });
   });
 
   app.post("/api/otp/verify", (req, res) => {
-    const { phone, otp } = req.body || {};
-    if (!phone || !isValidPhone(phone)) {
-      return res.status(400).json({ error: "Please enter a valid mobile number." });
+    const { email, otp } = req.body || {};
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ error: "Please enter a valid email address." });
     }
     if (!otp || typeof otp !== "string") {
       return res.status(400).json({ error: "Enter the 6-digit OTP." });
     }
 
-    const key = phoneKey(phone);
+    const key = emailKey(email);
     const record = otpStore.get(key);
 
     if (!record) {
-      return res.status(400).json({ error: "No OTP was requested for this number. Please request a new one." });
+      return res.status(400).json({ error: "No OTP was requested for this email address. Please request a new one." });
     }
     if (Date.now() > record.expiresAt) {
       otpStore.delete(key);
@@ -568,8 +545,8 @@ export function createApp() {
     }
 
     otpStore.delete(key);
-    verifiedPhones.set(key, Date.now());
-    return res.json({ verified: true, message: "Mobile number verified successfully." });
+    verifiedEmails.set(key, Date.now());
+    return res.json({ verified: true, message: "Email address verified successfully." });
   });
 
   // --- AUTHENTICATION & RATE LIMITING ---
@@ -637,10 +614,10 @@ export function createApp() {
       return res.status(400).json({ error: "A valid mobile number is required." });
     }
 
-    const phoneVerifiedAt = verifiedPhones.get(phoneKey(phone));
-    if (!phoneVerifiedAt || Date.now() - phoneVerifiedAt > OTP_VERIFIED_TTL_MS) {
+    const emailVerifiedAt = verifiedEmails.get(emailKey(email));
+    if (!emailVerifiedAt || Date.now() - emailVerifiedAt > OTP_VERIFIED_TTL_MS) {
       return res.status(403).json({
-        error: "Please verify your mobile number with the OTP sent to it before continuing.",
+        error: "Please verify your email address with the OTP sent to it before continuing.",
         requiresOtp: true,
       });
     }
@@ -661,7 +638,7 @@ export function createApp() {
         return res.status(401).json({ error: "Invalid admin credentials." });
       }
 
-      verifiedPhones.delete(phoneKey(phone));
+      verifiedEmails.delete(emailKey(email));
       const payload: AuthTokenPayload = {
         sub: "admin",
         email: ADMIN_EMAIL,
@@ -707,7 +684,7 @@ export function createApp() {
       };
       usersStore.set(key, user);
 
-      verifiedPhones.delete(phoneKey(phone));
+      verifiedEmails.delete(emailKey(email));
       const payload: AuthTokenPayload = { sub: user.id, email: user.email, role: user.role, name: user.name };
       return res.status(201).json({
         message: `Account created! Logged in as ${role.toUpperCase()}.`,
@@ -736,7 +713,7 @@ export function createApp() {
       return res.status(401).json({ error: "Incorrect email or password." });
     }
 
-    verifiedPhones.delete(phoneKey(phone));
+    verifiedEmails.delete(emailKey(email));
     const payload: AuthTokenPayload = {
       sub: existingUser.id,
       email: existingUser.email,
