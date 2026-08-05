@@ -31,14 +31,13 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
 //   https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api
 const AI_MODEL = process.env.GEMMA_MODEL || "gemma-4-31b-it";
 
-// Groq config
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const GROQ_API_URL = process.env.GROQ_API_URL || "https://api.groq.com/openai/v1";
-// Pick any currently supported Groq model from https://console.groq.com/docs/models
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
-const GROQ_API_ENABLED = Boolean(
-  GROQ_API_KEY &&
-    !GROQ_API_KEY.toLowerCase().includes("your_groq_api_key")
+// Nvidia NIM / OpenAI-compatible config
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || process.env.GROQ_API_KEY;
+const NVIDIA_API_URL = process.env.NVIDIA_API_URL || "https://integrate.api.nvidia.com/v1";
+const NVIDIA_MODEL = process.env.NVIDIA_MODEL || "google/gemma-4-31b-it";
+const NVIDIA_API_ENABLED = Boolean(
+  NVIDIA_API_KEY &&
+  !NVIDIA_API_KEY.toLowerCase().includes("your_api_key")
 );
 
 // ---------------------------------------------------------------------------
@@ -148,8 +147,8 @@ if (!JWT_SECRET) {
   JWT_SECRET = crypto.randomBytes(32).toString("hex");
   console.warn(
     "[auth] JWT_SECRET not set - using a randomly generated secret for this " +
-      "process. Sessions will be invalidated on restart. Set JWT_SECRET " +
-      "in your environment for persistent sessions."
+    "process. Sessions will be invalidated on restart. Set JWT_SECRET " +
+    "in your environment for persistent sessions."
   );
 }
 const JWT_EXPIRES_IN = "12h";
@@ -299,7 +298,7 @@ function registerLoginAttempt(ip: string) {
 
 function parseResumeHeuristically(text: string) {
   const lines = (text || "").split("\n").map(l => l.trim()).filter(Boolean);
-  
+
   let name = "";
   for (const line of lines.slice(0, 5)) {
     if (line.length > 2 && line.length < 35 && !/@|\.com|resume|curriculum|cv/i.test(line)) {
@@ -330,8 +329,8 @@ function parseResumeHeuristically(text: string) {
 
   const skillsKeywords = ["python", "javascript", "react", "node", "sql", "java", "c++", "ai", "machine learning", "data analytics", "figma", "cloud"];
   const foundSkills = skillsKeywords.filter(k => (text || "").toLowerCase().includes(k));
-  const strengths = foundSkills.length > 0 
-    ? `Proficient in ${foundSkills.map(s => s.toUpperCase()).join(", ")}, Data Structures & Software Design` 
+  const strengths = foundSkills.length > 0
+    ? `Proficient in ${foundSkills.map(s => s.toUpperCase()).join(", ")}, Data Structures & Software Design`
     : "Strong analytical skills, Python programming, and Full-Stack Web Development";
 
   const weaknesses = "Public Speaking & Technical Documentation (Actively Improving)";
@@ -479,15 +478,15 @@ function extractGroqText(response: any): string {
   return typeof outputStyle === "string" ? outputStyle.trim() : "";
 }
 
-async function callGroqChat(prompt: string, systemInstruction: string): Promise<string> {
-  const response = await fetch(`${GROQ_API_URL}/chat/completions`, {
+async function callNvidiaChat(prompt: string, systemInstruction: string): Promise<string> {
+  const response = await fetch(`${NVIDIA_API_URL}/chat/completions`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${GROQ_API_KEY}`,
+      Authorization: `Bearer ${NVIDIA_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model: NVIDIA_MODEL,
       messages: [
         { role: "system", content: systemInstruction },
         { role: "user", content: prompt },
@@ -499,22 +498,22 @@ async function callGroqChat(prompt: string, systemInstruction: string): Promise<
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Groq API error ${response.status}: ${text}`);
+    throw new Error(`Nvidia API error ${response.status}: ${text}`);
   }
 
   const data = await response.json();
   return extractGroqText(data);
 }
 
-async function callGroqCompletion(prompt: string, temperature = 0.2, maxTokens = 512): Promise<string> {
-  const response = await fetch(`${GROQ_API_URL}/chat/completions`, {
+async function callNvidiaCompletion(prompt: string, temperature = 0.2, maxTokens = 512): Promise<string> {
+  const response = await fetch(`${NVIDIA_API_URL}/chat/completions`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${GROQ_API_KEY}`,
+      Authorization: `Bearer ${NVIDIA_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model: NVIDIA_MODEL,
       messages: [{ role: "user", content: prompt }],
       temperature,
       max_tokens: maxTokens,
@@ -523,7 +522,7 @@ async function callGroqCompletion(prompt: string, temperature = 0.2, maxTokens =
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Groq API error ${response.status}: ${text}`);
+    throw new Error(`Nvidia API error ${response.status}: ${text}`);
   }
 
   const data = await response.json();
@@ -988,9 +987,9 @@ export function createApp() {
       console.warn("[Resume/PDF] PDF text extraction fallback note:", (err as any)?.message || err);
     }
 
-    const parseWithGroq = async (textToParse: string) => {
+    const parseWithNvidia = async (textToParse: string) => {
       const prompt = `Extract details from this resume text. Return ONLY a JSON object with these exact keys: 'name', 'phone', 'institution', 'course', 'strengths' (short summary), and 'weaknesses' (short summary). Do not use markdown backticks.\n\nResume text:\n${textToParse}`;
-      return callGroqCompletion(prompt, 0.2, 1024);
+      return callNvidiaCompletion(prompt, 0.2, 1024);
     };
 
     const parseWithGemini = async () => {
@@ -1016,12 +1015,12 @@ export function createApp() {
 
     try {
       let data: any = null;
-      if (GROQ_API_ENABLED && extractedText) {
+      if (NVIDIA_API_ENABLED && extractedText) {
         try {
-          const rawText = await generateWithTimeout(() => parseWithGroq(extractedText));
+          const rawText = await generateWithTimeout(() => parseWithNvidia(extractedText));
           data = extractJsonObject(rawText);
         } catch (e) {
-          console.warn("[Resume/PDF] Groq parsing failed, falling back to heuristic parsing:", e);
+          console.warn("[Resume/PDF] Nvidia parsing failed, falling back to heuristic parsing:", e);
         }
       } else if (Boolean(process.env.GEMINI_API_KEY)) {
         try {
@@ -1070,18 +1069,18 @@ export function createApp() {
       return reply;
     };
 
-    if (GROQ_API_ENABLED) {
+    if (NVIDIA_API_ENABLED) {
       try {
         const response = await generateWithTimeout(() =>
-          callGroqChat(
+          callNvidiaChat(
             prompt,
             "You are the PM Internship Scheme AI Match Assistant. You assist candidates, employers, and administrators on India's PM Internship Scheme portal. Provide concise, encouraging, and highly specific career and placement advice (2-3 sentences max). Emphasize scheme metrics, stipend details (₹20,000-₹25,000/mo), statement of purpose tips, or skill alignment."
           )
         );
         const reply = response || ruleBasedFallback(prompt);
-        return res.json({ reply, source: "groq" });
+        return res.json({ reply, source: "nvidia" });
       } catch (err: any) {
-        console.error("Groq AI Coach Error:", err?.message || err);
+        console.error("Nvidia AI Coach Error:", err?.message || err);
       }
     }
 
