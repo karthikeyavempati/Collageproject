@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { PortalRole, InternshipRole, Candidate, ApplicationFormData, UserSession } from './types';
+import { PortalRole, InternshipRole, Candidate, ApplicationFormData, UserSession, PendingCompany } from './types';
 import { 
   INITIAL_INTERNSHIPS, 
   INITIAL_CANDIDATES, 
   STATE_DISTRIBUTIONS, 
-  VERIFICATION_BATCHES 
+  VERIFICATION_BATCHES,
+  PENDING_COMPANIES
 } from './data/mockData';
 import { Navigation } from './components/Navigation';
 import { LandingPage } from './components/LandingPage';
@@ -28,6 +29,7 @@ export default function App() {
   const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
   const [stateDistributions, setStateDistributions] = useState(STATE_DISTRIBUTIONS);
   const [verificationBatches, setVerificationBatches] = useState(VERIFICATION_BATCHES);
+  const [pendingCompanies, setPendingCompanies] = useState<PendingCompany[]>(PENDING_COMPANIES);
   const [isLoadingApi, setIsLoadingApi] = useState(true);
 
   // Modals & Drawers state
@@ -239,6 +241,39 @@ export default function App() {
     addToast('success', 'Verification Batch Processed', `${batchId} records verified and pushed to state registry.`);
   };
 
+  // Company approval workflow for admin dashboard
+  const handleApproveCompany = async (companyId: string) => {
+    try {
+      await fetch(`/api/pending-companies/${companyId}/approve`, {
+        method: 'POST',
+        headers: authHeaders()
+      });
+    } catch (err) {
+      console.warn('API company approval failed, fallback to state:', err);
+    }
+    setPendingCompanies(prev =>
+      prev.map(c => c.id === companyId ? { ...c, status: 'Approved' as const } : c)
+    );
+    const company = pendingCompanies.find(c => c.id === companyId);
+    addToast('success', 'Company Approved', `${company?.name || 'Company'} has been approved and is now active on the portal.`);
+  };
+
+  const handleRejectCompany = async (companyId: string) => {
+    try {
+      await fetch(`/api/pending-companies/${companyId}/reject`, {
+        method: 'POST',
+        headers: authHeaders()
+      });
+    } catch (err) {
+      console.warn('API company rejection failed, fallback to state:', err);
+    }
+    setPendingCompanies(prev =>
+      prev.map(c => c.id === companyId ? { ...c, status: 'Rejected' as const } : c)
+    );
+    const company = pendingCompanies.find(c => c.id === companyId);
+    addToast('info', 'Company Rejected', `${company?.name || 'Company'} has been rejected.`);
+  };
+
   const handleLoginSuccess = (session: UserSession) => {
     setUserSession(session);
     addToast('success', `Welcome back, ${session.name}!`, `Authenticated as ${session.role.toUpperCase()} into PM Internship Scheme portal.`);
@@ -307,6 +342,7 @@ export default function App() {
             onApply={handleOpenApplyModal}
             onOpenAICoach={() => setIsAICoachOpen(true)}
             userName={userSession.name}
+            candidates={candidates}
           />
         )}
 
@@ -326,6 +362,9 @@ export default function App() {
             stateDistributions={stateDistributions}
             verificationBatches={verificationBatches}
             onApproveBatch={handleApproveVerificationBatch}
+            pendingCompanies={pendingCompanies}
+            onApproveCompany={handleApproveCompany}
+            onRejectCompany={handleRejectCompany}
           />
         )}
       </main>

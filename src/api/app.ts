@@ -16,8 +16,9 @@ import {
   INITIAL_CANDIDATES,
   STATE_DISTRIBUTIONS,
   VERIFICATION_BATCHES,
+  PENDING_COMPANIES,
 } from "../data/mockData.js";
-import { InternshipRole, Candidate } from "../types.js";
+import { InternshipRole, Candidate, PendingCompany } from "../types.js";
 
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
@@ -256,6 +257,7 @@ let internships: InternshipRole[] = [...INITIAL_INTERNSHIPS];
 let candidates: Candidate[] = [...INITIAL_CANDIDATES];
 let stateDistributions = [...STATE_DISTRIBUTIONS];
 let verificationBatches = [...VERIFICATION_BATCHES];
+let pendingCompanies: PendingCompany[] = [...PENDING_COMPANIES];
 
 // ---------------------------------------------------------------------------
 // RATE LIMITER FOR LOGIN
@@ -936,6 +938,30 @@ export function createApp() {
 
     verificationBatches = verificationBatches.filter((b) => b.id !== id);
     res.json({ message: "Batch approved and processed", batchId: id });
+  });
+
+  // --- PENDING COMPANY APPROVALS (admin only) ---
+
+  app.get("/api/pending-companies", requireAuth(["admin"]), (_req, res) => {
+    res.json(pendingCompanies.filter(c => c.status === "Pending"));
+  });
+
+  app.post("/api/pending-companies/:id/approve", requireAuth(["admin"]), (req, res) => {
+    const { id } = req.params;
+    const company = pendingCompanies.find(c => c.id === id);
+    if (!company) return res.status(404).json({ error: "Company not found" });
+
+    company.status = "Approved";
+    res.json({ message: "Company approved successfully", company });
+  });
+
+  app.post("/api/pending-companies/:id/reject", requireAuth(["admin"]), (req, res) => {
+    const { id } = req.params;
+    const company = pendingCompanies.find(c => c.id === id);
+    if (!company) return res.status(404).json({ error: "Company not found" });
+
+    company.status = "Rejected";
+    res.json({ message: "Company rejected", company });
   });
 
   // --- AI: RESUME PARSING ---

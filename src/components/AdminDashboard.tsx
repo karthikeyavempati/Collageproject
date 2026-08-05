@@ -1,235 +1,205 @@
-import React, { useState } from 'react';
-import { StateDistribution, VerificationBatch } from '../types';
-import { 
-  BarChart3, 
-  ShieldAlert, 
-  CheckCircle2, 
-  Users, 
-  FileCheck, 
-  MapPin, 
-  MoreHorizontal, 
-  ArrowRight,
-  Sparkles,
-  Activity,
-  ShieldCheck
+import React from 'react';
+import { StateDistribution, VerificationBatch, PendingCompany } from '../types';
+import {
+  Users,
+  Building2,
+  Clock,
+  Briefcase,
+  TrendingUp
 } from 'lucide-react';
 
 interface AdminDashboardProps {
   stateDistributions: StateDistribution[];
   verificationBatches: VerificationBatch[];
   onApproveBatch: (batchId: string) => void;
+  /** Companies awaiting admin approval */
+  pendingCompanies: PendingCompany[];
+  onApproveCompany: (companyId: string) => void;
+  onRejectCompany: (companyId: string) => void;
 }
-
-const TricolorBar = ({ className = '' }: { className?: string }) => (
-  <div className={`flex w-full ${className}`}>
-    <div className="h-1 flex-1 bg-[#FF9933]" />
-    <div className="h-1 flex-1 bg-white border-y border-gray-100" />
-    <div className="h-1 flex-1 bg-[#138808]" />
-  </div>
-);
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   stateDistributions,
   verificationBatches,
-  onApproveBatch
+  onApproveBatch,
+  pendingCompanies,
+  onApproveCompany,
+  onRejectCompany
 }) => {
-  const [selectedRegion, setSelectedRegion] = useState<string>('All');
-
-  const filteredStates = stateDistributions.filter(s => {
-    if (selectedRegion === 'North') return s.state === 'Delhi NCR' || s.state === 'Uttar Pradesh';
-    if (selectedRegion === 'South') return s.state === 'Karnataka' || s.state === 'Tamil Nadu';
-    if (selectedRegion === 'West') return s.state === 'Maharashtra';
-    return true;
-  });
+  // Only show companies still pending
+  const pendingList = pendingCompanies.filter(c => c.status === 'Pending');
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-gray-900 pt-24 pb-24 md:pb-16 px-4 md:px-8 md:ml-64 max-w-7xl">
-      <TricolorBar className="rounded-t-xl mb-6 shadow-xs" />
+    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-20 pb-16">
+      <main className="max-w-[1280px] mx-auto px-4 md:px-8 space-y-8">
 
-      {/* Official Government Strip */}
-      <div className="relative z-10 flex items-center gap-2 mb-6 px-4 py-2 bg-white border border-gray-200 rounded-2xl shadow-xs w-max animate-in fade-in duration-500">
-        <span className="text-lg">🇮🇳</span>
-        <span className="text-xs font-bold text-[#005E93]">PM Internship Scheme</span>
-        <span className="text-xs text-gray-400">•</span>
-        <span className="text-xs text-gray-600">Ministry of Corporate Affairs</span>
-        <span className="ml-2 px-2 py-0.5 bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-[10px] font-bold">System Command Center</span>
-      </div>
-
-      {/* Top Banner */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div>
-          <div className="text-xs uppercase tracking-widest font-bold text-gray-500 mb-1 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-[#005E93]" /> Scheme Oversight &amp; Audit Command
-          </div>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#005E93] tracking-tight">
-            System Overview 🏛️
+        {/* ── Page Header ──────────────────────────────── */}
+        <header>
+          <h2 className="text-[32px] font-semibold text-[#191c1e] mb-2 leading-[40px]">
+            System Administrator Dashboard
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Real-time verification metrics, batch audits &amp; platform-wide applicant distribution for the PM Internship Scheme.
+          <p className="text-base text-[#43474f]">
+            Overview and administration of the PM Internship Scheme.
           </p>
-        </div>
+        </header>
 
-        <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-white border border-gray-200 shadow-xs self-start md:self-auto">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-bold text-gray-800">System Status: <strong className="text-emerald-700">99.9% Operational</strong></span>
-        </div>
-      </div>
-
-      {/* KPI Grid (Bento style) */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 animate-in fade-in duration-500">
-        {/* KPI 1 */}
-        <div className="bg-white border border-gray-200 shadow-xs rounded-3xl p-6 flex flex-col justify-between h-48 relative overflow-hidden">
-          <div className="flex justify-between items-start z-10">
-            <span className="text-xs uppercase tracking-wider font-bold text-gray-500">Total System Applications</span>
-            <div className="p-2 rounded-xl bg-blue-50 border border-blue-200">
-              <Users className="w-5 h-5 text-[#005E93]" />
+        {/* ── High-level Analytics KPI Cards ────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Total Active Students */}
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Total Active Students</h3>
+              <Users className="w-6 h-6 text-[#fe9832]" />
             </div>
-          </div>
-          <div className="z-10">
-            <div className="text-5xl font-extrabold text-[#005E93] tracking-tight">1.2M</div>
-            <div className="text-xs text-green-700 font-bold mt-2 flex items-center gap-1">
-              <Activity className="w-3.5 h-3.5 text-green-600" /> +12% growth from previous month
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 2 */}
-        <div className="bg-white border border-gray-200 shadow-xs rounded-3xl p-6 flex flex-col justify-between h-48 relative overflow-hidden">
-          <div className="flex justify-between items-start z-10">
-            <span className="text-xs uppercase tracking-wider font-bold text-gray-500">Pending Verification</span>
-            <div className="p-2 rounded-xl bg-rose-50 border border-rose-200">
-              <ShieldAlert className="w-5 h-5 text-rose-600" />
-            </div>
-          </div>
-          <div className="z-10">
-            <div className="text-5xl font-extrabold text-[#005E93] tracking-tight">45K</div>
-            <div className="text-xs text-rose-700 font-bold mt-2">Zone C Document Verification Queue</div>
-          </div>
-        </div>
-
-        {/* KPI 3 */}
-        <div className="bg-white border border-gray-200 shadow-xs rounded-3xl p-6 flex flex-col justify-between h-48 relative overflow-hidden">
-          <div className="flex justify-between items-start z-10">
-            <span className="text-xs uppercase tracking-wider font-bold text-gray-500">Verification Approval Rate</span>
-            <div className="p-2 rounded-xl bg-green-50 border border-green-200">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-            </div>
-          </div>
-          <div className="z-10">
-            <div className="text-5xl font-extrabold text-[#005E93] tracking-tight">78%</div>
-            <div className="text-xs text-gray-500 mt-2 font-medium">Rolling 30-day verified average</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Regional Analytics & Verification Queue */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* State-wise Distribution Area */}
-        <div className="lg:col-span-2 bg-white border border-gray-200 shadow-xs rounded-3xl p-6 md:p-8 flex flex-col justify-between">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-            <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-[#005E93]" /> State-wise Application Volume
-            </h3>
-
-            <div className="flex gap-1.5">
-              {['All', 'North', 'South', 'West'].map(region => (
-                <button
-                  key={region}
-                  onClick={() => setSelectedRegion(region)}
-                  className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                    selectedRegion === region
-                      ? 'bg-[#005E93] text-white font-bold'
-                      : 'bg-slate-100 text-gray-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {region}
-                </button>
-              ))}
+            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">120,500</p>
+            <div className="mt-4 flex items-center text-sm text-[#012200]">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span>+4.2% from last month</span>
             </div>
           </div>
 
-          <div className="space-y-4 my-2">
-            {filteredStates.map((st) => (
-              <div key={st.state} className="p-4 rounded-2xl bg-slate-50 border border-gray-200/80">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-gray-900">{st.state}</span>
-                  <span className="text-xs font-mono font-bold text-[#005E93]">
-                    {st.applications.toLocaleString()} Applications
-                  </span>
-                </div>
+          {/* Total Registered Companies */}
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Total Registered Companies</h3>
+              <Building2 className="w-6 h-6 text-[#003366]" />
+            </div>
+            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">8,200</p>
+            <div className="mt-4 flex items-center text-sm text-[#012200]">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              <span>+1.8% from last month</span>
+            </div>
+          </div>
 
-                {/* Progress bar */}
-                <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
-                  <div
-                    className="h-full bg-[#005E93] rounded-full"
-                    style={{ width: `${(st.applications / 250000) * 100}%` }}
-                  />
-                </div>
+          {/* Pending Approvals */}
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Pending Approvals</h3>
+              <Clock className="w-6 h-6 text-[#8f4e00]" />
+            </div>
+            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">{pendingList.length}</p>
+            <div className="mt-4 text-sm text-[#43474f]">
+              Requires attention
+            </div>
+          </div>
 
-                <div className="flex items-center justify-between text-[11px] text-gray-600 font-medium">
-                  <span>Verified: <strong className="text-gray-900">{st.verifiedPercentage}%</strong></span>
-                  <span>Active Partners: <strong className="text-gray-900">{st.activePartners} Enterprise Units</strong></span>
-                </div>
+          {/* Active Internships */}
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Active Internships</h3>
+              <Briefcase className="w-6 h-6 text-[#0055AA]" />
+            </div>
+            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">45,320</p>
+            <div className="mt-4 text-sm text-[#43474f]">
+              Across 12 sectors
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bento Grid: Chart + Approvals Table ─────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* ── Registration Trends (placeholder chart) ── */}
+          <div className="lg:col-span-1 bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm flex flex-col">
+            <h3 className="text-2xl font-semibold mb-6 text-[#191c1e]">Registration Trends</h3>
+            <div className="flex-1 relative min-h-[250px] bg-[#f2f4f6] rounded-lg overflow-hidden border border-[#c3c6d1]/50">
+              {/* Visual bar chart placeholder matching Stitch design */}
+              <div className="absolute inset-0 flex items-end p-4 space-x-2">
+                <div className="w-1/6 bg-[#a7c8ff]/40 rounded-t" style={{ height: '25%' }} />
+                <div className="w-1/6 bg-[#a7c8ff]/60 rounded-t" style={{ height: '50%' }} />
+                <div className="w-1/6 bg-[#a7c8ff]/80 rounded-t" style={{ height: '75%' }} />
+                <div className="w-1/6 bg-[#003366]/70 rounded-t" style={{ height: '66%' }} />
+                <div className="w-1/6 bg-[#003366]/90 rounded-t" style={{ height: '100%' }} />
+                <div className="w-1/6 bg-[#003366] rounded-t" style={{ height: '85%' }} />
               </div>
+              <div className="absolute top-4 left-4 text-xs font-medium text-[#43474f] font-['Public_Sans']">
+                Monthly Signups (YTD)
+              </div>
+            </div>
+          </div>
+
+          {/* ── Pending Company Approvals Table ────────── */}
+          <div className="lg:col-span-2 bg-white border border-[#c3c6d1] rounded-xl shadow-sm overflow-hidden flex flex-col">
+            {/* Table Header */}
+            <div className="p-6 border-b border-[#c3c6d1] flex justify-between items-center">
+              <h3 className="text-2xl font-semibold text-[#191c1e]">Pending Company Approvals</h3>
+              <button className="text-[#001e40] text-sm font-semibold hover:underline font-['Public_Sans']">
+                View All
+              </button>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#f2f4f6] text-[#43474f] border-b border-[#c3c6d1]">
+                    <th className="p-4 text-sm font-semibold font-['Public_Sans']">Company Name</th>
+                    <th className="p-4 text-sm font-semibold font-['Public_Sans']">Industry</th>
+                    <th className="p-4 text-sm font-semibold font-['Public_Sans']">Date Applied</th>
+                    <th className="p-4 text-sm font-semibold text-right font-['Public_Sans']">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="text-base">
+                  {pendingList.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="p-8 text-center text-[#43474f]">
+                        No pending company approvals. All companies have been reviewed.
+                      </td>
+                    </tr>
+                  )}
+                  {pendingList.map(company => (
+                    <tr
+                      key={company.id}
+                      className="border-b border-[#c3c6d1] hover:bg-[#f7f9fb]/50 transition-colors"
+                    >
+                      <td className="p-4">
+                        <div className="flex items-center space-x-3">
+                          {/* Company initial avatar */}
+                          <div className="w-8 h-8 rounded bg-[#e6e8ea] flex items-center justify-center text-[#001e40] font-bold text-sm">
+                            {company.name.charAt(0)}
+                          </div>
+                          <span className="font-medium text-[#191c1e]">{company.name}</span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-[#43474f]">{company.industry}</td>
+                      <td className="p-4 text-[#43474f]">{company.dateApplied}</td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => onRejectCompany(company.id)}
+                            className="px-3 py-1.5 bg-white border border-[#ba1a1a] text-[#ba1a1a] rounded hover:bg-[#ffdad6] transition-colors text-sm font-semibold font-['Public_Sans']"
+                          >
+                            Reject
+                          </button>
+                          <button
+                            onClick={() => onApproveCompany(company.id)}
+                            className="px-3 py-1.5 bg-[#003366] text-white rounded hover:opacity-90 transition-opacity text-sm font-semibold font-['Public_Sans']"
+                          >
+                            Approve
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Footer ─────────────────────────────────────── */}
+        <footer className="mt-8 border-t border-[#c3c6d1] bg-[#e0e3e5] rounded-xl flex flex-col md:flex-row justify-between items-center px-12 py-8 w-full">
+          <div className="mb-4 md:mb-0">
+            <span className="text-sm font-black font-['Public_Sans']">PM Internship Scheme</span>
+            <p className="text-base text-[#43474f] mt-1">© 2024 PM Internship Scheme. Government of India.</p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4 text-xs font-['Public_Sans']">
+            {['Privacy Policy', 'Terms of Service', 'Accessibility', 'Contact Us'].map(link => (
+              <a key={link} href="#" className="text-[#43474f] hover:text-[#001e40] transition-colors">{link}</a>
             ))}
           </div>
-
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-600 mt-4">
-            <span>Highest Volume State: <strong className="text-gray-900">Maharashtra (245,091)</strong></span>
-            <span className="text-green-700 font-bold flex items-center gap-1">
-              <ShieldCheck className="w-4 h-4" /> 100% Aadhaar Verified
-            </span>
-          </div>
-        </div>
-
-        {/* Verification Queue Area */}
-        <div className="bg-white border border-gray-200 shadow-xs rounded-3xl p-6 md:p-8 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                <FileCheck className="w-5 h-5 text-amber-600" /> Verification Batches
-              </h3>
-              <MoreHorizontal className="w-5 h-5 text-gray-400 cursor-pointer" />
-            </div>
-
-            <div className="space-y-4">
-              {verificationBatches.map((batch) => (
-                <div key={batch.id} className="rounded-2xl p-4 border border-gray-200 bg-slate-50/60 flex flex-col gap-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-bold text-gray-900 mb-0.5">{batch.title}</p>
-                      <p className="text-xs text-gray-500">{batch.type}</p>
-                    </div>
-
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                      batch.priority === 'High' ? 'bg-rose-100 text-rose-700 border border-rose-200' :
-                      batch.priority === 'System' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
-                      'bg-gray-100 text-gray-700 border border-gray-200'
-                    }`}>
-                      {batch.priority}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-200/80">
-                    <span className="text-xs text-gray-600 font-mono font-semibold">{batch.count} Records</span>
-                    
-                    <button
-                      onClick={() => onApproveBatch(batch.id)}
-                      className="rounded-xl px-3 py-1.5 text-xs font-bold bg-[#005E93] text-white hover:bg-[#004A75] transition-all flex items-center gap-1 shadow-xs"
-                    >
-                      Process Batch <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-            <span className="text-xs text-gray-500">Batch Audit Rate: <strong className="text-gray-900">12,000 docs/hr</strong></span>
-          </div>
-        </div>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 };

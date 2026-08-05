@@ -1,22 +1,18 @@
-import React, { useState } from 'react';
-import { InternshipRole } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { InternshipRole, Candidate } from '../types';
 import {
-  TrendingUp,
-  Sparkles,
   Search,
-  Building2,
   MapPin,
-  CheckCircle2,
+  Calendar,
+  Wallet,
+  X,
+  Send,
   Bot,
-  FileText,
-  Award,
-  ArrowRight,
-  ShieldCheck,
-  Clock,
+  ChevronUp,
+  Compass,
+  TrendingUp,
   Star,
-  UploadCloud,
-  RefreshCw,
-  AlertCircle
+  FileText
 } from 'lucide-react';
 
 interface StudentDashboardProps {
@@ -25,471 +21,469 @@ interface StudentDashboardProps {
   onApply: (role: InternshipRole) => void;
   onOpenAICoach: () => void;
   userName?: string;
+  /** Candidates data used to compute shortlisted count */
+  candidates?: Candidate[];
 }
 
-const TricolorBar = ({ className = '' }: { className?: string }) => (
-  <div className={`flex w-full ${className}`}>
-    <div className="h-1 flex-1 bg-[#FF9933]" />
-    <div className="h-1 flex-1 bg-white border-y border-gray-100" />
-    <div className="h-1 flex-1 bg-[#138808]" />
-  </div>
-);
+// ─── Floating Chat Widget ────────────────────────────────────────────────────
+// A persistent bottom-right chat FAB that expands into a panel wired to
+// the existing /api/ai-coach backend endpoint.
+const ChatWidget: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<{ role: 'user' | 'bot'; text: string }[]>([
+    { role: 'bot', text: 'Hello! I\'m your PM Internship Scheme assistant. How can I help you today?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSend = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || isLoading) return;
+
+    setMessages(prev => [...prev, { role: 'user', text: trimmed }]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/ai-coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: trimmed })
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: 'bot', text: data.reply || 'Sorry, I could not process that.' }]);
+    } catch {
+      setMessages(prev => [...prev, { role: 'bot', text: 'Network error. Please try again later.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      {/* Expanded Chat Panel */}
+      {isOpen && (
+        <div className="mb-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ maxHeight: '480px' }}>
+          {/* Header */}
+          <div className="bg-[#003366] text-white px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bot className="w-5 h-5" />
+              <span className="text-sm font-bold">PM Internship Assistant</span>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 rounded-full p-1 transition-colors">
+              <ChevronUp className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ minHeight: '240px', maxHeight: '340px' }}>
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${
+                  msg.role === 'user'
+                    ? 'bg-[#003366] text-white rounded-br-sm'
+                    : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                }`}>
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-500 px-3 py-2 rounded-2xl rounded-bl-sm text-sm">
+                  Thinking...
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-gray-200 p-3 flex items-center gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
+              placeholder="Ask me anything..."
+              className="flex-1 text-sm bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#003366] focus:border-transparent"
+            />
+            <button
+              onClick={handleSend}
+              disabled={isLoading || !input.trim()}
+              className="p-2 bg-[#003366] text-white rounded-xl hover:bg-[#002244] disabled:opacity-40 transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* FAB Button with hover tooltip */}
+      <div className="group relative">
+        {!isOpen && (
+          <div className="absolute bottom-full right-0 mb-2 bg-white border border-gray-200 shadow-lg rounded-2xl rounded-br-none px-4 py-2 text-sm font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+            How can I help you today?
+          </div>
+        )}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-14 h-14 bg-[#003366] text-white rounded-full shadow-lg flex items-center justify-center hover:bg-[#002244] transition-colors focus:ring-4 focus:ring-blue-200"
+        >
+          {isOpen ? <X className="w-6 h-6" /> : <Bot className="w-7 h-7" />}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Student Dashboard ───────────────────────────────────────────────────────
 
 export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   internships,
   appliedRoleIds,
   onApply,
   onOpenAICoach,
-  userName = "Alex"
+  userName = "Student",
+  candidates = []
 }) => {
+  // Search & Filters
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'openings' | 'my-applications'>('openings');
-  
-  // PDF Resume upload state
-  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
-  const [pdfUploadSuccess, setPdfUploadSuccess] = useState<string | null>(null);
-  const [pdfUploadError, setPdfUploadError] = useState<string | null>(null);
-  const [extractedProfile, setExtractedProfile] = useState<{
-    name?: string;
-    institution?: string;
-    course?: string;
-    strengths?: string;
-    weaknesses?: string;
-  } | null>(null);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [activeChips, setActiveChips] = useState<string[]>([]);
 
-  const topMatchRole = internships[0];
+  // Dashboard metric computations
+  const totalApplied = appliedRoleIds.length;
+  const shortlistedCount = candidates.filter(c => c.status === 'Shortlisted').length;
+  const awaitingInterviews = candidates.filter(c => c.status === 'Interviewed').length;
 
-  const filteredInternships = internships.filter(role =>
-    role.title.toLowerCase().includes(search.toLowerCase()) ||
-    role.company.toLowerCase().includes(search.toLowerCase()) ||
-    role.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
-  );
+  // ── Filter logic ────────────────────────────────
+  const locationOptions = ['Delhi NCR', 'Mumbai', 'Bangalore'];
+  const durationOptions = ['1 - 3 Months', '3 - 6 Months', '6+ Months'];
+  const skillOptions = ['Python', 'Data Analysis', 'Marketing', 'Finance'];
 
-  const myAppliedRoles = internships.filter(role => appliedRoleIds.includes(role.id));
-
-  const convertFileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
+  const parseDurationMonths = (dur: string): number => {
+    const match = dur.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
   };
 
-  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setPdfUploadError('File size exceeds 5MB. Please upload a smaller PDF file.');
-      return;
-    }
-
-    setIsUploadingPdf(true);
-    setPdfUploadError(null);
-    setPdfUploadSuccess(null);
-
-    try {
-      const base64 = await convertFileToBase64(file);
-      const res = await fetch('/api/parse-resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileData: base64, mimeType: file.type || 'application/pdf' })
-      });
-
-      const data = await res.json();
-      if (res.ok && data) {
-        setExtractedProfile({
-          name: data.name,
-          institution: data.institution,
-          course: data.course,
-          strengths: data.strengths,
-          weaknesses: data.weaknesses
-        });
-        setPdfUploadSuccess('PDF Resume analyzed successfully by AI!');
-      } else {
-        throw new Error(data.error || 'Could not extract PDF details');
-      }
-    } catch (err: any) {
-      console.error(err);
-      setPdfUploadError('Could not process PDF automatically. Your profile is still active.');
-    } finally {
-      setIsUploadingPdf(false);
-    }
+  const matchesDuration = (roleDuration: string, filter: string): boolean => {
+    const months = parseDurationMonths(roleDuration);
+    if (filter === '1 - 3 Months') return months >= 1 && months <= 3;
+    if (filter === '3 - 6 Months') return months > 3 && months <= 6;
+    if (filter === '6+ Months') return months > 6;
+    return true;
   };
+
+  const filteredInternships = internships.filter(role => {
+    // Text search
+    const matchesSearch = !search ||
+      role.title.toLowerCase().includes(search.toLowerCase()) ||
+      role.company.toLowerCase().includes(search.toLowerCase()) ||
+      role.tags.some(t => t.toLowerCase().includes(search.toLowerCase()));
+
+    // Location filter
+    const matchesLocation = selectedLocations.length === 0 ||
+      selectedLocations.some(loc => role.location.toLowerCase().includes(loc.toLowerCase()));
+
+    // Duration filter
+    const matchesDur = !selectedDuration || matchesDuration(role.duration, selectedDuration);
+
+    // Skills filter
+    const matchesSkill = selectedSkills.length === 0 ||
+      selectedSkills.some(skill => role.tags.some(t => t.toLowerCase().includes(skill.toLowerCase())));
+
+    // Active chip filters
+    const matchesChips = activeChips.length === 0 ||
+      activeChips.some(chip =>
+        role.sector.toLowerCase().includes(chip.toLowerCase()) ||
+        role.tags.some(t => t.toLowerCase().includes(chip.toLowerCase()))
+      );
+
+    return matchesSearch && matchesLocation && matchesDur && matchesSkill && matchesChips;
+  });
+
+  const toggleLocation = (loc: string) => {
+    setSelectedLocations(prev =>
+      prev.includes(loc) ? prev.filter(l => l !== loc) : [...prev, loc]
+    );
+  };
+
+  const toggleSkill = (skill: string) => {
+    setSelectedSkills(prev =>
+      prev.includes(skill) ? prev.filter(s => s !== skill) : [...prev, skill]
+    );
+  };
+
+  const removeChip = (chip: string) => {
+    setActiveChips(prev => prev.filter(c => c !== chip));
+  };
+
+  const clearAllFilters = () => {
+    setSelectedLocations([]);
+    setSelectedDuration(null);
+    setSelectedSkills([]);
+    setActiveChips([]);
+    setSearch('');
+  };
+
+  const hasActiveFilters = selectedLocations.length > 0 || selectedDuration || selectedSkills.length > 0 || activeChips.length > 0;
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-gray-900 pt-24 pb-24 md:pb-16 px-4 md:px-8 max-w-7xl mx-auto">
-      <TricolorBar className="rounded-t-xl mb-6 shadow-xs" />
+    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-20 pb-16">
+      {/* ── Main Content Area ────────────────────────────── */}
+      <main className="max-w-[1280px] mx-auto px-4 md:px-12 w-full">
 
-      {/* Government Official Banner */}
-      <div className="relative z-10 bg-white border border-gray-200 shadow-xs rounded-3xl p-6 md:p-8 mb-8 animate-in fade-in duration-500 overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-50/70 rounded-full -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-xs font-bold text-blue-900 mb-3">
-              <span>🇮🇳</span>
-              <span>PM Internship Scheme</span>
-              <span className="text-gray-300">•</span>
-              <span className="text-gray-600">Ministry of Corporate Affairs</span>
-              <span className="ml-1 px-2 py-0.5 bg-green-100 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">Verified Candidate Portal</span>
+        {/* ── Welcome & Metric Bento Cards ────────────── */}
+        <div className="mb-12">
+          <h2 className="text-[32px] font-semibold text-[#001e40] mb-6 leading-[40px]">
+            Welcome back, {userName}
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Metric: Total Jobs Applied */}
+            <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Total Jobs Applied</p>
+                  <p className="text-[48px] font-bold text-[#003366] leading-[56px] tracking-[-0.02em]">{totalApplied}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-[#d5e3ff] flex items-center justify-center text-[#003366]">
+                  <FileText className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center gap-1 text-xs font-medium text-[#012500] font-['Public_Sans']">
+                <TrendingUp className="w-4 h-4" />
+                <span>+{Math.max(1, Math.floor(totalApplied * 0.12))} this week</span>
+              </div>
             </div>
-            
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#005E93] tracking-tight mb-2">
-              Welcome back, {extractedProfile?.name || userName} 🎓
-            </h2>
-            <p className="text-sm text-gray-600 max-w-2xl">
-              Access real-time internship openings, AI skill match scores &amp; official stipend application tracking.
-            </p>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={onOpenAICoach}
-              className="group inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#005E93] text-white text-xs font-bold hover:bg-[#004A75] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-md"
-            >
-              <Bot className="w-4 h-4 text-sky-200" />
-              <span>Launch AI Career Coach</span>
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-            </button>
+            {/* Metric: Shortlisted Applications */}
+            <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Shortlisted Applications</p>
+                  <p className="text-[48px] font-bold text-[#fe9832] leading-[56px] tracking-[-0.02em]">{shortlistedCount}</p>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-[#ffdcc2] flex items-center justify-center text-[#683700]">
+                  <Star className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4 text-xs font-medium text-[#43474f] font-['Public_Sans']">
+                Awaiting interviews for {awaitingInterviews}
+              </div>
+            </div>
+
+            {/* CTA: Discover New Roles */}
+            <div className="bg-[#003366] text-white rounded-xl p-6 flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute -right-4 -top-4 opacity-10">
+                <Compass className="w-[120px] h-[120px]" />
+              </div>
+              <div className="relative z-10">
+                <h3 className="text-2xl font-semibold mb-2">Discover New Roles</h3>
+                <p className="text-base opacity-90 mb-4">Over 500+ new internships added today.</p>
+              </div>
+              <button
+                onClick={onOpenAICoach}
+                className="bg-white text-[#003366] px-4 py-2 rounded-lg text-sm font-semibold w-fit hover:bg-[#f2f4f6] transition-colors relative z-10 font-['Public_Sans']"
+              >
+                Explore Now
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Grid Section */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 mb-10">
+        {/* ── Job Board: Filters + Listings ───────────── */}
+        <div className="flex flex-col lg:flex-row gap-8">
 
-        {/* Profile Strength & PDF Resume Upload Card */}
-        <div className="md:col-span-4 bg-white border border-gray-200 shadow-xs rounded-3xl p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-900">Candidate Profile &amp; AI Analysis</h3>
-              <div className="p-2 rounded-xl bg-green-50 border border-green-200">
-                <TrendingUp className="w-4 h-4 text-green-600" />
+          {/* ── Sidebar Filters ──────────────────────── */}
+          <aside className="w-full lg:w-1/4">
+            <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 sticky top-24">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6 border-b border-[#c3c6d1] pb-4">
+                <h3 className="text-2xl font-semibold text-[#001e40]">Filters</h3>
+                <button
+                  onClick={clearAllFilters}
+                  className={`text-xs font-medium text-[#001e40] hover:underline font-['Public_Sans'] ${!hasActiveFilters ? 'opacity-40 pointer-events-none' : ''}`}
+                >
+                  Clear All
+                </button>
               </div>
-            </div>
 
-            {/* Upload PDF Section */}
-            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 mb-5">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText className="w-4 h-4 text-[#005E93]" />
-                <span className="text-xs font-bold text-gray-900">Upload PDF Resume</span>
-              </div>
-              <p className="text-[11px] text-gray-600 mb-3">
-                Upload your latest PDF resume to automatically calculate your AI Match Index across 1,200+ roles.
-              </p>
-
-              <label className="group flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-xl bg-white border border-dashed border-blue-400 hover:border-blue-600 cursor-pointer transition-all shadow-xs">
-                {isUploadingPdf ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 text-[#005E93] animate-spin" />
-                    <span className="text-xs font-bold text-gray-700">Analyzing PDF with AI...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-4 h-4 text-[#005E93] group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold text-[#005E93]">Choose Resume PDF</span>
-                  </>
-                )}
-                <input
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  disabled={isUploadingPdf}
-                  onChange={handlePdfUpload}
-                  className="hidden"
-                />
-              </label>
-
-              {pdfUploadSuccess && (
-                <div className="mt-2 p-2 rounded-lg bg-green-50 border border-green-200 text-[11px] text-green-800 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />
-                  <span>{pdfUploadSuccess}</span>
-                </div>
-              )}
-              {pdfUploadError && (
-                <div className="mt-2 p-2 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800 flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  <span>{pdfUploadError}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Extracted Details / Progress Gauge */}
-            <div className="flex items-center gap-4 mb-4">
-              <div className="relative w-20 h-20 shrink-0">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-                  <circle
-                    cx="50" cy="50" r="42" fill="none"
-                    stroke="#005E93"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    strokeDasharray={2 * Math.PI * 42}
-                    strokeDashoffset={2 * Math.PI * 42 * (1 - (extractedProfile ? 0.95 : 0.85))}
-                    style={{ transition: 'stroke-dashoffset 1s ease-in-out' }}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-extrabold text-[#005E93]">
-                    {extractedProfile ? '95%' : '85%'}
-                  </span>
+              {/* Location Checkboxes */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-[#43474f] mb-3 uppercase tracking-wider font-['Public_Sans']">Location</h4>
+                <div className="flex flex-col gap-2">
+                  {locationOptions.map(loc => (
+                    <label key={loc} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedLocations.includes(loc)}
+                        onChange={() => toggleLocation(loc)}
+                        className="rounded border-[#737780] text-[#003366] focus:ring-[#003366]"
+                      />
+                      <span className="text-base">{loc}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
+
+              {/* Duration Radio Buttons */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-[#43474f] mb-3 uppercase tracking-wider font-['Public_Sans']">Duration</h4>
+                <div className="flex flex-col gap-2">
+                  {durationOptions.map(dur => (
+                    <label key={dur} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="duration"
+                        checked={selectedDuration === dur}
+                        onChange={() => setSelectedDuration(selectedDuration === dur ? null : dur)}
+                        className="border-[#737780] text-[#003366] focus:ring-[#003366]"
+                      />
+                      <span className="text-base">{dur}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Skills Chips */}
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 block mb-1">
-                  Profile Completion
-                </span>
-                <span className="text-xs font-medium text-gray-700 block">
-                  {extractedProfile?.institution || "IIT Delhi - B.Tech CSE"}
-                </span>
-                <span className="text-[11px] text-green-700 font-bold mt-1 inline-flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3" /> Ministry Verified
-                </span>
+                <h4 className="text-sm font-semibold text-[#43474f] mb-3 uppercase tracking-wider font-['Public_Sans']">Skills</h4>
+                <div className="flex flex-wrap gap-2">
+                  {skillOptions.map(skill => (
+                    <span
+                      key={skill}
+                      onClick={() => toggleSkill(skill)}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border cursor-pointer transition-colors font-['Public_Sans'] ${
+                        selectedSkills.includes(skill)
+                          ? 'bg-[#003366] text-white border-[#003366]'
+                          : 'bg-[#eceef0] text-[#191c1e] border-[#c3c6d1] hover:bg-[#e6e8ea]'
+                      }`}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </aside>
 
-        {/* Top AI Match Card */}
-        {topMatchRole && (
-          <div className="md:col-span-8 bg-white border border-gray-200 shadow-xs rounded-3xl p-6 md:p-8 flex flex-col md:flex-row relative overflow-hidden">
-            <div className="md:w-3/5 z-10 flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 w-max mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-800">#1 AI Scheme Recommendation</span>
+          {/* ── Job Listings ─────────────────────────── */}
+          <div className="flex-1">
+            {/* Search Bar & Active Chips */}
+            <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+              <div className="relative w-full sm:w-2/3 md:w-1/2">
+                <Search className="w-5 h-5 text-[#737780] absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by role, company, or keyword..."
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-[#c3c6d1] rounded-lg text-base focus:border-[#003366] focus:ring-1 focus:ring-[#003366] shadow-sm"
+                />
               </div>
-
-              <h3 className="text-2xl font-extrabold text-gray-900 mb-1">{topMatchRole.title}</h3>
-              <p className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
-                <Building2 className="w-3.5 h-3.5" /> {topMatchRole.company} • {topMatchRole.location}
-              </p>
-
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {topMatchRole.tags.map(t => (
-                  <span key={t} className="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[11px] font-medium">
-                    {t}
+              <div className="flex gap-2 flex-wrap">
+                {activeChips.map(chip => (
+                  <span key={chip} className="px-3 py-1.5 bg-[#ffdcc2] text-[#683700] rounded-lg text-xs font-bold flex items-center gap-1 font-['Public_Sans']">
+                    {chip}
+                    <button onClick={() => removeChip(chip)} className="hover:text-red-600">
+                      <X className="w-4 h-4" />
+                    </button>
                   </span>
                 ))}
               </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => onApply(topMatchRole)}
-                  disabled={appliedRoleIds.includes(topMatchRole.id)}
-                  className="group px-6 py-2.5 rounded-2xl bg-[#005E93] text-white text-xs font-bold hover:bg-[#004A75] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shadow-md flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-                >
-                  {appliedRoleIds.includes(topMatchRole.id) ? 'Applied ✓' : 'Instant Apply'}
-                  {!appliedRoleIds.includes(topMatchRole.id) && <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />}
-                </button>
-                <span className="text-sm font-bold text-green-700">{topMatchRole.stipend}</span>
-              </div>
             </div>
 
-            <div className="hidden md:flex md:w-2/5 items-center justify-center p-4 z-10">
-              <div className="w-full rounded-2xl bg-blue-50/70 border border-blue-200 p-6 flex flex-col items-center justify-center text-center">
-                <div className="text-5xl font-extrabold text-[#005E93] mb-1">98%</div>
-                <div className="text-xs uppercase tracking-wider font-bold text-blue-900">Skill Fit Index</div>
-                <p className="text-[10px] text-gray-500 mt-2">Verified against Academic Records &amp; AI Portfolio Analysis</p>
-              </div>
-            </div>
-          </div>
-        )}
+            {/* Internship Cards */}
+            <div className="flex flex-col gap-4">
+              {filteredInternships.length === 0 && (
+                <div className="bg-white border border-[#c3c6d1] rounded-xl p-12 text-center">
+                  <Search className="w-12 h-12 text-[#c3c6d1] mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-[#001e40] mb-1">No internships match your filters</h3>
+                  <p className="text-sm text-[#43474f] mb-4">Try adjusting your search or clearing filters.</p>
+                  <button onClick={clearAllFilters} className="text-sm font-semibold text-[#001e40] hover:underline">
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
 
-        {/* Verified Skill Mapping */}
-        <div className="md:col-span-12 bg-white border border-gray-200 shadow-xs rounded-3xl p-6 md:p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-sm font-bold text-gray-900">Verified Skill &amp; AI Analysis Summary</h3>
-            <div className="flex items-center gap-1.5 text-[10px] text-green-700 font-bold bg-green-50 border border-green-200 px-3 py-1 rounded-full">
-              <ShieldCheck className="w-3.5 h-3.5" /> Scheme Accredited
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-blue-50/60 border border-blue-100">
-              <div className="p-3 rounded-xl bg-blue-100 border border-blue-200 text-[#005E93] shrink-0">
-                <Award className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-0.5">Core Technical Focus</h4>
-                <p className="text-xs text-gray-600">
-                  {extractedProfile?.strengths || "Full-Stack Development, System Architecture & Database Design."}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-purple-50/60 border border-purple-100">
-              <div className="p-3 rounded-xl bg-purple-100 border border-purple-200 text-purple-700 shrink-0">
-                <Bot className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-0.5">Academic Qualification</h4>
-                <p className="text-xs text-gray-600">
-                  {extractedProfile?.course || "B.Tech Computer Science"} — {extractedProfile?.institution || "IIT Delhi"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-4 rounded-2xl bg-green-50/60 border border-green-100">
-              <div className="p-3 rounded-xl bg-green-100 border border-green-200 text-green-700 shrink-0">
-                <FileText className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-gray-900 mb-0.5">Areas for Development</h4>
-                <p className="text-xs text-gray-600">
-                  {extractedProfile?.weaknesses || "Technical Documentation & Advanced Enterprise Architecture."}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs + Search */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-200 pb-4 mb-6 gap-4">
-        <div className="flex gap-6">
-          <button
-            onClick={() => setActiveTab('openings')}
-            className={`text-sm font-bold pb-2 transition-all border-b-2 ${
-              activeTab === 'openings'
-                ? 'border-[#005E93] text-[#005E93]'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            All Scheme Roles ({internships.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('my-applications')}
-            className={`text-sm font-bold pb-2 transition-all border-b-2 ${
-              activeTab === 'my-applications'
-                ? 'border-[#005E93] text-[#005E93]'
-                : 'border-transparent text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            My Submitted Applications ({appliedRoleIds.length})
-          </button>
-        </div>
-
-        <div className="relative w-full sm:w-64">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Filter roles or companies..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white border border-gray-300 rounded-xl pl-9 pr-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-xs"
-          />
-        </div>
-      </div>
-
-      {/* Tab Content */}
-      <div className="relative z-10">
-        {activeTab === 'openings' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredInternships.map((role) => {
-              const isApplied = appliedRoleIds.includes(role.id);
-              return (
-                <div
-                  key={role.id}
-                  className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col justify-between shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full">
-                        {role.stipend}
-                      </span>
-                      {role.matchScore && (
-                        <div className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                          <Star className="w-3 h-3 text-amber-500" />
-                          {role.matchScore}% AI Fit
+              {filteredInternships.map(role => {
+                const isApplied = appliedRoleIds.includes(role.id);
+                return (
+                  <div
+                    key={role.id}
+                    className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow"
+                  >
+                    <div className="flex flex-col md:flex-row justify-between gap-4">
+                      {/* Left: Role Info */}
+                      <div className="flex gap-4">
+                        {/* Company Icon Placeholder */}
+                        <div className="w-16 h-16 rounded border border-[#c3c6d1] flex items-center justify-center bg-[#f7f9fb] p-2 shrink-0">
+                          <span className="text-2xl font-bold text-[#003366]">
+                            {role.company.charAt(0)}
+                          </span>
                         </div>
-                      )}
-                    </div>
+                        <div>
+                          <h3 className="text-2xl font-semibold text-[#001e40]">{role.title}</h3>
+                          <p className="text-base text-[#43474f]">{role.company}</p>
+                          <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-xs text-[#64748B] font-['Public_Sans']">
+                            <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {role.location}</span>
+                            <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {role.duration}</span>
+                            <span className="flex items-center gap-1"><Wallet className="w-4 h-4" /> {role.stipend}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                    <h3 className="text-base font-bold text-gray-900 mb-1">{role.title}</h3>
-                    <p className="text-xs text-gray-500 mb-3 flex items-center gap-1">
-                      <Building2 className="w-3.5 h-3.5" /> {role.company}
-                    </p>
-
-                    <p className="text-xs text-gray-600 line-clamp-2 mb-4 leading-relaxed">{role.description}</p>
-
-                    <div className="flex flex-wrap gap-1.5 mb-5">
-                      {role.tags.map(t => (
-                        <span key={t} className="px-2 py-0.5 rounded-full bg-blue-50 border border-blue-100 text-[10px] text-blue-700 font-medium">
-                          {t}
+                      {/* Right: Status & Apply */}
+                      <div className="flex flex-col items-start md:items-end justify-between border-t md:border-t-0 border-[#c3c6d1] pt-4 md:pt-0 mt-2 md:mt-0">
+                        <span className="px-2 py-1 bg-[#f2f4f6] text-[#43474f] rounded text-xs font-medium mb-2 md:mb-0 font-['Public_Sans']">
+                          {role.status === 'Open' ? 'Posted 2d ago' : role.status === 'Closing Soon' ? 'Closing soon' : 'Under review'}
                         </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-gray-400" /> {role.location}
-                    </span>
-                    <button
-                      disabled={isApplied}
-                      onClick={() => onApply(role)}
-                      className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                        isApplied
-                          ? 'bg-green-50 text-green-700 border border-green-200 flex items-center gap-1 cursor-default'
-                          : 'bg-[#005E93] text-white hover:bg-[#004A75] hover:-translate-y-0.5 active:translate-y-0 shadow-xs'
-                      }`}
-                    >
-                      {isApplied ? (
-                        <><CheckCircle2 className="w-3.5 h-3.5" /> Applied</>
-                      ) : 'Apply Now'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {myAppliedRoles.length === 0 ? (
-              <div className="bg-white border border-gray-200 shadow-xs rounded-3xl p-12 text-center">
-                <div className="w-16 h-16 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <FileText className="w-8 h-8 text-[#005E93]" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-1">No Applications Submitted Yet</h3>
-                <p className="text-xs text-gray-500 mb-6">Explore recommended scheme roles above and submit applications with 1-click verification.</p>
-                <button
-                  onClick={() => setActiveTab('openings')}
-                  className="px-6 py-2.5 rounded-2xl bg-[#005E93] text-white text-xs font-bold hover:bg-[#004A75] transition-all shadow-md"
-                >
-                  Browse Openings
-                </button>
-              </div>
-            ) : (
-              myAppliedRoles.map((role) => (
-                <div
-                  key={role.id}
-                  className="bg-white border border-gray-200 shadow-xs rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-md transition-all"
-                >
-                  <div>
-                    <div className="inline-flex items-center gap-1.5 text-xs text-green-700 font-bold bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full mb-2">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Verified Scheme Application
-                    </div>
-                    <h3 className="text-base font-bold text-gray-900">{role.title}</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">{role.company} • {role.location}</p>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-gray-900">{role.stipend}</div>
-                      <div className="text-[10px] text-gray-500 flex items-center gap-1 justify-end mt-0.5">
-                        <Clock className="w-3 h-3 text-amber-500" /> Under Review
+                        <button
+                          onClick={() => !isApplied && onApply(role)}
+                          disabled={isApplied}
+                          className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors font-['Public_Sans'] ${
+                            isApplied
+                              ? 'bg-[#d5e3ff] text-[#003366] cursor-default'
+                              : 'bg-[#003366] text-white hover:bg-[#002244] focus:ring-2 focus:ring-[#003366] focus:ring-offset-2'
+                          }`}
+                        >
+                          {isApplied ? 'Applied ✓' : 'Apply'}
+                        </button>
                       </div>
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-bold text-blue-800">
-                      Active Application
-                    </span>
                   </div>
-                </div>
-              ))
-            )}
+                );
+              })}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      </main>
+
+      {/* ── Footer ──────────────────────────────────────── */}
+      <footer className="w-full mt-16 py-8 bg-[#e0e3e5] border-t border-[#c3c6d1] flex flex-col md:flex-row justify-between items-center px-12">
+        <div className="text-sm font-black text-[#191c1e] mb-4 md:mb-0 font-['Public_Sans']">
+          © 2024 PM Internship Scheme. Government of India.
+        </div>
+        <div className="flex flex-wrap gap-4 items-center justify-center">
+          {['Privacy Policy', 'Terms of Service', 'Accessibility', 'Contact Us'].map(link => (
+            <a key={link} href="#" className="text-xs text-[#43474f] hover:text-[#001e40] transition-colors font-['Public_Sans']">
+              {link}
+            </a>
+          ))}
+        </div>
+      </footer>
+
+      {/* ── Floating Chat Widget ────────────────────────── */}
+      <ChatWidget />
     </div>
   );
 };

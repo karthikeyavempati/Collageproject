@@ -23,6 +23,8 @@ export interface InternshipRole {
   sector: string;
   status: 'Open' | 'Closing Soon' | 'Reviewing';
   featured?: boolean;
+  /** Duration string used by the Stitch filter panel (e.g. "6 Months") */
+  duration: string;
 }
 
 export interface Candidate {
@@ -57,6 +59,15 @@ export interface VerificationBatch {
   count: number;
   status: 'Pending' | 'In Review' | 'Completed';
   zone: string;
+}
+
+/** Represents a company pending admin approval on the platform */
+export interface PendingCompany {
+  id: string;
+  name: string;
+  industry: string;
+  dateApplied: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
 }
 
 export interface ApplicationFormData {

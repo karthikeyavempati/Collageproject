@@ -1,4 +1,4 @@
-import { InternshipRole, Candidate, StateDistribution, VerificationBatch } from '../types';
+import { InternshipRole, Candidate, StateDistribution, VerificationBatch, PendingCompany } from '../types';
 
 export const INITIAL_INTERNSHIPS: InternshipRole[] = [
   {
@@ -14,7 +14,8 @@ export const INITIAL_INTERNSHIPS: InternshipRole[] = [
     applicantsCount: 142,
     sector: 'Technology & Business',
     status: 'Open',
-    featured: true
+    featured: true,
+    duration: '6 Months'
   },
   {
     id: 'pm-02',
@@ -29,7 +30,8 @@ export const INITIAL_INTERNSHIPS: InternshipRole[] = [
     applicantsCount: 315,
     sector: 'Enterprise Tech',
     status: 'Open',
-    featured: true
+    featured: true,
+    duration: '6 Months'
   },
   {
     id: 'pm-03',
@@ -43,7 +45,8 @@ export const INITIAL_INTERNSHIPS: InternshipRole[] = [
     matchScore: 91,
     applicantsCount: 220,
     sector: 'Business Policy',
-    status: 'Closing Soon'
+    status: 'Closing Soon',
+    duration: '3 Months'
   },
   {
     id: 'pm-04',
@@ -57,7 +60,8 @@ export const INITIAL_INTERNSHIPS: InternshipRole[] = [
     matchScore: 89,
     applicantsCount: 185,
     sector: 'Digital Infrastructure',
-    status: 'Open'
+    status: 'Open',
+    duration: '3 Months'
   },
   {
     id: 'pm-05',
@@ -71,7 +75,8 @@ export const INITIAL_INTERNSHIPS: InternshipRole[] = [
     matchScore: 88,
     applicantsCount: 410,
     sector: 'Artificial Intelligence',
-    status: 'Reviewing'
+    status: 'Reviewing',
+    duration: '12 Months'
   }
 ];
 
@@ -203,5 +208,37 @@ export const VERIFICATION_BATCHES: VerificationBatch[] = [
     count: 12,
     status: 'Pending',
     zone: 'System Central'
+  }
+];
+
+/** Companies awaiting admin approval — matches Stitch admin design */
+export const PENDING_COMPANIES: PendingCompany[] = [
+  {
+    id: 'company-01',
+    name: 'TechCorp India Pvt Ltd',
+    industry: 'Information Technology',
+    dateApplied: 'Oct 24, 2024',
+    status: 'Pending'
+  },
+  {
+    id: 'company-02',
+    name: 'GreenEnergy Solutions',
+    industry: 'Renewable Energy',
+    dateApplied: 'Oct 23, 2024',
+    status: 'Pending'
+  },
+  {
+    id: 'company-03',
+    name: 'Apex Manufacturing',
+    industry: 'Manufacturing',
+    dateApplied: 'Oct 22, 2024',
+    status: 'Pending'
+  },
+  {
+    id: 'company-04',
+    name: 'National Banking Corp',
+    industry: 'Finance',
+    dateApplied: 'Oct 21, 2024',
+    status: 'Pending'
   }
 ];
