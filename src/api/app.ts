@@ -249,9 +249,20 @@ function userKey(role: string, email: string): string {
 // NOTE: This mirrors the original prototype's in-memory persistence.
 // On Vercel, each serverless function instance is ephemeral - data written
 // here will NOT reliably persist across requests/deploys/cold starts once
-// this is deployed to Vercel (different invocations can land on different
-// instances). It's fine for demos, but for real persistence swap this for
-// a database (Vercel Postgres, Supabase, etc.) - see README.
+// Pre-seed usersStore with demo accounts so logins persist across Vercel serverless cold starts
+const defaultPasswordHash = bcrypt.hashSync("password123", BCRYPT_ROUNDS);
+const usersStore = new Map<string, StoredUser>([
+  [userKey("student", "student@example.com"), {
+    id: "usr-stu-01", email: "student@example.com", passwordHash: defaultPasswordHash, role: "student", name: "Riya Patel"
+  }],
+  [userKey("employer", "employer@example.com"), {
+    id: "usr-emp-01", email: "employer@example.com", passwordHash: defaultPasswordHash, role: "employer", name: "Tech Mahindra"
+  }],
+  [userKey("admin", ADMIN_EMAIL || "venkatakarthikeyavempati@gmail.com"), {
+    id: "usr-adm-01", email: ADMIN_EMAIL || "venkatakarthikeyavempati@gmail.com", passwordHash: defaultPasswordHash, role: "admin", name: "System Admin"
+  }]
+]);
+
 let internships: InternshipRole[] = [...INITIAL_INTERNSHIPS];
 let candidates: Candidate[] = [...INITIAL_CANDIDATES];
 let stateDistributions = [...STATE_DISTRIBUTIONS];
@@ -491,8 +502,11 @@ async function callNvidiaChat(prompt: string, systemInstruction: string): Promis
         { role: "system", content: systemInstruction },
         { role: "user", content: prompt },
       ],
+      chat_template_kwargs: {
+        enable_thinking: true
+      },
       temperature: 0.7,
-      max_tokens: 300,
+      max_tokens: 16384,
     }),
   });
 
@@ -515,8 +529,11 @@ async function callNvidiaCompletion(prompt: string, temperature = 0.2, maxTokens
     body: JSON.stringify({
       model: NVIDIA_MODEL,
       messages: [{ role: "user", content: prompt }],
+      chat_template_kwargs: {
+        enable_thinking: true
+      },
       temperature,
-      max_tokens: maxTokens,
+      max_tokens: 16384,
     }),
   });
 
