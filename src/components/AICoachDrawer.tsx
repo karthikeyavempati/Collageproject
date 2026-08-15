@@ -3,13 +3,14 @@ import { Bot, X, Sparkles, Send, CheckCircle2, Zap } from 'lucide-react';
 
 interface AICoachDrawerProps {
   onClose: () => void;
+  userName?: string;
 }
 
-export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ onClose }) => {
+export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ onClose, userName }) => {
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: "Namaste Alex! I am your PM Internship Scheme AI Match Assistant. I've analyzed your academic records and resume against over 80+ corporate openings."
+      text: `Namaste ${userName || 'Student'}! I am your PM Internship Scheme AI Match Assistant. I've analyzed your academic records and resume against over 80+ corporate openings.`
     },
     {
       sender: 'ai',

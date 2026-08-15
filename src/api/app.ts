@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -237,7 +240,6 @@ interface StoredUser {
   role: PortalRole;
   name: string;
 }
-const usersStore = new Map<string, StoredUser>(); // key: `${role}:${email.toLowerCase()}`
 
 function userKey(role: string, email: string): string {
   return `${role}:${email.trim().toLowerCase()}`;
@@ -249,7 +251,8 @@ function userKey(role: string, email: string): string {
 // NOTE: This mirrors the original prototype's in-memory persistence.
 // On Vercel, each serverless function instance is ephemeral - data written
 // here will NOT reliably persist across requests/deploys/cold starts once
-// Pre-seed usersStore with demo accounts so logins persist across Vercel serverless cold starts
+// the instance is recycled.
+// Pre-seed usersStore with demo accounts so logins persist across cold starts.
 const defaultPasswordHash = bcrypt.hashSync("password123", BCRYPT_ROUNDS);
 const usersStore = new Map<string, StoredUser>([
   [userKey("student", "student@example.com"), {

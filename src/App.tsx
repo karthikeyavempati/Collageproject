@@ -394,7 +394,7 @@ export default function App() {
       )}
 
       {isAICoachOpen && (
-        <AICoachDrawer onClose={() => setIsAICoachOpen(false)} />
+        <AICoachDrawer onClose={() => setIsAICoachOpen(false)} userName={userSession?.name} />
       )}
 
       {/* Toast Notifications */}
