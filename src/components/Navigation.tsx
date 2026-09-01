@@ -61,69 +61,71 @@ export const Navigation: React.FC<NavigationProps> = ({
       </div>
 
       {/* Top Navbar for Mobile & Desktop */}
-      <header className="fixed top-1 left-0 right-0 z-50 h-20 bg-white border-b border-gray-200 shadow-sm px-4 md:px-8 flex items-center justify-between">
-        <div className="flex items-center gap-4 md:gap-8">
+      <header className="fixed top-1 left-0 right-0 z-50 h-16 sm:h-20 bg-white border-b border-gray-200 shadow-sm px-2 sm:px-4 md:px-8 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-8 min-w-0">
           {/* Logo & Scheme Brand */}
           <div 
             onClick={() => setActiveRole('landing')}
-            className="cursor-pointer flex items-center gap-3 group"
+            className="cursor-pointer flex items-center gap-2 sm:gap-3 group min-w-0 shrink-0"
           >
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:scale-105 transition-transform overflow-hidden">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:scale-105 transition-transform overflow-hidden shrink-0">
               <img
                 src="/assets/india_flag.png"
                 alt="Indian flag"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-blue-900 flex items-center gap-1.5">
-                PM Internship Scheme
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-xl font-bold tracking-tight text-blue-900 flex items-center gap-1.5 truncate">
+                <span className="sm:hidden">PM Internship</span>
+                <span className="hidden sm:inline">PM Internship Scheme</span>
               </h1>
               <p className="text-xs text-gray-500 hidden sm:block font-medium">Ministry of Corporate Affairs</p>
             </div>
           </div>
 
           {/* Role Display Pill */}
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <div
               className="rounded-full px-3.5 py-1.5 flex items-center gap-2 text-xs font-semibold text-gray-700 border border-gray-200 bg-gray-50"
             >
               <span className="w-2 h-2 rounded-full bg-blue-600" />
               <span className="hidden sm:inline text-gray-500">View:</span>
-              <span className="font-bold text-gray-900">{roles.find(r => r.id === activeRole)?.label}</span>
+              <span className="font-bold text-gray-900 truncate max-w-[100px]">{roles.find(r => r.id === activeRole)?.label}</span>
             </div>
           </div>
         </div>
 
         {/* Right Action Icons */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4">
           {isAuthenticated ? (
             <button
               onClick={onLogout}
-              className="rounded-md px-4 py-2 flex items-center gap-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-red-600 transition-all shadow-sm"
+              className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-red-600 transition-all shadow-sm"
             >
-              <ShieldCheck className="w-4 h-4 text-green-600" />
-              <span className="max-w-[7rem] truncate">{userName || 'Signed In'}</span>
-              <LogIn className="w-4 h-4 rotate-180 text-gray-400" />
+              <ShieldCheck className="w-4 h-4 text-green-600 shrink-0" />
+              <span className="max-w-[4rem] sm:max-w-[7rem] truncate hidden sm:inline">{userName || 'Signed In'}</span>
+              <LogIn className="w-4 h-4 rotate-180 text-gray-400 hidden sm:block" />
             </button>
           ) : (
             <button
               onClick={() => setActiveRole('login')}
-              className={`rounded-md px-5 py-2 flex items-center gap-2 text-sm font-semibold transition-all shadow-sm ${
+              className={`rounded-md px-3 sm:px-5 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold transition-all shadow-sm ${
                 activeRole === 'login'
                   ? 'bg-blue-800 text-white hover:bg-blue-900 border border-transparent'
                   : 'bg-white text-blue-800 border border-blue-200 hover:bg-blue-50'
               }`}
             >
               <LogIn className="w-4 h-4" />
-              <span>Login / Register</span>
+              <span className="hidden sm:inline">Login / Register</span>
+              <span className="sm:hidden">Login</span>
             </button>
           )}
 
           {activeRole === 'student' && isAuthenticated && onOpenAICoach && (
             <button
               onClick={onOpenAICoach}
-              className="rounded-md px-4 py-2 flex items-center gap-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors shadow-sm"
+              className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors shadow-sm"
             >
               <Bot className="w-4 h-4 text-blue-600" />
               <span className="hidden md:inline">AI Assistant</span>
@@ -133,7 +135,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           {activeRole === 'employer' && isAuthenticated && onOpenNewPosting && (
             <button
               onClick={onOpenNewPosting}
-              className="rounded-md px-4 py-2 flex items-center gap-2 text-sm font-semibold text-white bg-[#005E93] hover:bg-[#004A75] border border-transparent transition-colors shadow-sm"
+              className="rounded-md px-2 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2 text-xs sm:text-sm font-semibold text-white bg-[#005E93] hover:bg-[#004A75] border border-transparent transition-colors shadow-sm"
             >
               <PlusCircle className="w-4 h-4 text-white" />
               <span className="hidden sm:inline">New Posting</span>
@@ -152,7 +154,7 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white pt-24 px-6 pb-24 md:hidden flex flex-col justify-between overflow-y-auto animate-in fade-in slide-in-from-right duration-200">
+        <div className="fixed inset-0 z-40 bg-white pt-20 px-6 pb-20 md:hidden flex flex-col justify-between overflow-y-auto animate-in fade-in slide-in-from-right duration-200">
           <div className="space-y-6">
             <div className="space-y-2">
               <h3 className="text-xs uppercase font-bold text-gray-500 mb-3 tracking-wider">Quick Navigation</h3>

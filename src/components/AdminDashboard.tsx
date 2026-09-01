@@ -30,12 +30,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const pendingList = pendingCompanies.filter(c => c.status === 'Pending');
 
   return (
-    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-20 pb-16">
-      <main className="max-w-[1280px] mx-auto px-4 md:px-8 space-y-8">
+    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-[4.5rem] sm:pt-20 pb-20 sm:pb-16">
+      <main className="max-w-[1280px] mx-auto px-3 sm:px-4 md:px-8 space-y-6 sm:space-y-8">
 
         {/* ── Page Header ──────────────────────────────── */}
         <header>
-          <h2 className="text-[32px] font-semibold text-[#191c1e] mb-2 leading-[40px]">
+          <h2 className="text-2xl sm:text-[32px] font-semibold text-[#191c1e] mb-2 leading-tight sm:leading-[40px]">
             System Administrator Dashboard
           </h2>
           <p className="text-base text-[#43474f]">
@@ -44,14 +44,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </header>
 
         {/* ── High-level Analytics KPI Cards ────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {/* Total Active Students */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Total Active Students</h3>
               <Users className="w-6 h-6 text-[#fe9832]" />
             </div>
-            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">120,500</p>
+            <p className="text-[32px] sm:text-[48px] font-bold text-[#191c1e] leading-[40px] sm:leading-[56px] tracking-[-0.02em]">120,500</p>
             <div className="mt-4 flex items-center text-sm text-[#012200]">
               <TrendingUp className="w-4 h-4 mr-1" />
               <span>+4.2% from last month</span>
@@ -59,12 +59,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           {/* Total Registered Companies */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Total Registered Companies</h3>
               <Building2 className="w-6 h-6 text-[#003366]" />
             </div>
-            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">8,200</p>
+            <p className="text-[32px] sm:text-[48px] font-bold text-[#191c1e] leading-[40px] sm:leading-[56px] tracking-[-0.02em]">8,200</p>
             <div className="mt-4 flex items-center text-sm text-[#012200]">
               <TrendingUp className="w-4 h-4 mr-1" />
               <span>+1.8% from last month</span>
@@ -72,24 +72,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
 
           {/* Pending Approvals */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Pending Approvals</h3>
               <Clock className="w-6 h-6 text-[#8f4e00]" />
             </div>
-            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">{pendingList.length}</p>
+            <p className="text-[32px] sm:text-[48px] font-bold text-[#191c1e] leading-[40px] sm:leading-[56px] tracking-[-0.02em]">{pendingList.length}</p>
             <div className="mt-4 text-sm text-[#43474f]">
               Requires attention
             </div>
           </div>
 
           {/* Active Internships */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-[#43474f] font-['Public_Sans']">Active Internships</h3>
               <Briefcase className="w-6 h-6 text-[#0055AA]" />
             </div>
-            <p className="text-[48px] font-bold text-[#191c1e] leading-[56px] tracking-[-0.02em]">45,320</p>
+            <p className="text-[32px] sm:text-[48px] font-bold text-[#191c1e] leading-[40px] sm:leading-[56px] tracking-[-0.02em]">45,320</p>
             <div className="mt-4 text-sm text-[#43474f]">
               Across 12 sectors
             </div>
@@ -188,7 +188,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
 
         {/* ── Footer ─────────────────────────────────────── */}
-        <footer className="mt-8 border-t border-[#c3c6d1] bg-[#e0e3e5] rounded-xl flex flex-col md:flex-row justify-between items-center px-12 py-8 w-full">
+        <footer className="mt-8 border-t border-[#c3c6d1] bg-[#e0e3e5] rounded-xl flex flex-col md:flex-row justify-between items-center px-4 sm:px-12 py-6 sm:py-8 w-full">
           <div className="mb-4 md:mb-0">
             <span className="text-sm font-black font-['Public_Sans']">PM Internship Scheme</span>
             <p className="text-base text-[#43474f] mt-1">© 2024 PM Internship Scheme. Government of India.</p>

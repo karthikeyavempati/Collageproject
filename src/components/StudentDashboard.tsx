@@ -65,10 +65,10 @@ const ChatWidget: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end">
       {/* Expanded Chat Panel */}
       {isOpen && (
-        <div className="mb-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ maxHeight: '480px' }}>
+        <div className="mb-3 w-[calc(100vw-2rem)] sm:w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300" style={{ maxHeight: 'calc(100vh - 10rem)' }}>
           {/* Header */}
           <div className="bg-[#003366] text-white px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -237,25 +237,25 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const hasActiveFilters = selectedLocations.length > 0 || selectedDuration || selectedSkills.length > 0 || activeChips.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-20 pb-16">
+    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-[4.5rem] sm:pt-20 pb-20 sm:pb-16">
       {/* ── Main Content Area ────────────────────────────── */}
-      <main className="max-w-[1280px] mx-auto px-4 md:px-12 w-full">
+      <main className="max-w-[1280px] mx-auto px-3 sm:px-4 md:px-12 w-full">
 
         {/* ── Welcome & Metric Bento Cards ────────────── */}
         <div className="mb-12">
-          <h2 className="text-[32px] font-semibold text-[#001e40] mb-6 leading-[40px]">
+          <h2 className="text-2xl sm:text-[32px] font-semibold text-[#001e40] mb-4 sm:mb-6 leading-tight sm:leading-[40px]">
             Welcome back, {userName}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
             {/* Metric: Total Jobs Applied */}
-            <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
+            <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Total Jobs Applied</p>
-                  <p className="text-[48px] font-bold text-[#003366] leading-[56px] tracking-[-0.02em]">{totalApplied}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Total Jobs Applied</p>
+                    <p className="text-[32px] sm:text-[48px] font-bold text-[#003366] leading-[40px] sm:leading-[56px] tracking-[-0.02em]">{totalApplied}</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-[#d5e3ff] flex items-center justify-center text-[#003366]">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#d5e3ff] flex items-center justify-center text-[#003366] shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
               </div>
@@ -266,13 +266,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </div>
 
             {/* Metric: Shortlisted Applications */}
-            <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
+            <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-shadow">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Shortlisted Applications</p>
-                  <p className="text-[48px] font-bold text-[#fe9832] leading-[56px] tracking-[-0.02em]">{shortlistedCount}</p>
+                    <p className="text-xs sm:text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Shortlisted Applications</p>
+                    <p className="text-[32px] sm:text-[48px] font-bold text-[#fe9832] leading-[40px] sm:leading-[56px] tracking-[-0.02em]">{shortlistedCount}</p>
                 </div>
-                <div className="w-12 h-12 rounded-full bg-[#ffdcc2] flex items-center justify-center text-[#683700]">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#ffdcc2] flex items-center justify-center text-[#683700] shrink-0">
                   <Star className="w-5 h-5" />
                 </div>
               </div>
@@ -282,13 +282,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </div>
 
             {/* CTA: Discover New Roles */}
-            <div className="bg-[#003366] text-white rounded-xl p-6 flex flex-col justify-between relative overflow-hidden">
+            <div className="bg-[#003366] text-white rounded-xl p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden col-span-2 sm:col-span-1 md:col-span-1">
               <div className="absolute -right-4 -top-4 opacity-10">
                 <Compass className="w-[120px] h-[120px]" />
               </div>
               <div className="relative z-10">
-                <h3 className="text-2xl font-semibold mb-2">Discover New Roles</h3>
-                <p className="text-base opacity-90 mb-4">Over 500+ new internships added today.</p>
+                <h3 className="text-xl sm:text-2xl font-semibold mb-2">Discover New Roles</h3>
+                <p className="text-sm sm:text-base opacity-90 mb-4">Over 500+ new internships added today.</p>
               </div>
               <button
                 onClick={onOpenAICoach}
@@ -432,7 +432,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                           </span>
                         </div>
                         <div>
-                          <h3 className="text-2xl font-semibold text-[#001e40]">{role.title}</h3>
+                          <h3 className="text-lg sm:text-2xl font-semibold text-[#001e40]">{role.title}</h3>
                           <p className="text-base text-[#43474f]">{role.company}</p>
                           <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-xs text-[#64748B] font-['Public_Sans']">
                             <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {role.location}</span>
@@ -469,7 +469,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
       </main>
 
       {/* ── Footer ──────────────────────────────────────── */}
-      <footer className="w-full mt-16 py-8 bg-[#e0e3e5] border-t border-[#c3c6d1] flex flex-col md:flex-row justify-between items-center px-12">
+      <footer className="w-full mt-16 py-6 sm:py-8 bg-[#e0e3e5] border-t border-[#c3c6d1] flex flex-col md:flex-row justify-between items-center px-4 sm:px-12">
         <div className="text-sm font-black text-[#191c1e] mb-4 md:mb-0 font-['Public_Sans']">
           © 2024 PM Internship Scheme. Government of India.
         </div>

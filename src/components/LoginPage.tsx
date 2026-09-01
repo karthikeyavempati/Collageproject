@@ -521,7 +521,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     const secondsLeft = otpSecondsLeft % 60;
 
     return (
-      <div className="relative min-h-[80vh] flex items-center justify-center pt-24 pb-16 px-4 animate-in fade-in duration-300">
+      <div className="relative min-h-[80vh] flex items-center justify-center pt-20 sm:pt-24 pb-16 px-3 sm:px-4 animate-in fade-in duration-300">
         <div className="absolute inset-0 z-0 bg-blue-50/50" />
         <div className="relative z-10 w-full max-w-md">
           <button
@@ -614,7 +614,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   }
 
   return (
-    <div className="relative pt-28 pb-20 px-4 md:px-8 max-w-6xl mx-auto animate-in fade-in duration-300">
+    <div className="relative pt-20 sm:pt-28 pb-20 px-3 sm:px-4 md:px-8 max-w-6xl mx-auto animate-in fade-in duration-300">
       <div className="absolute inset-0 z-0 bg-blue-50/50" />
 
       {/* Government Banner Image */}
@@ -632,7 +632,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <ShieldCheck className="w-4 h-4 text-green-600 animate-pulse" />
           <span>Official Portal — Ministry of Corporate Affairs</span>
         </div>
-        <h2 className="text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight">
           PM Internship Scheme Login
         </h2>
         <p className="text-sm text-gray-600 mt-2">
@@ -852,7 +852,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                           className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-xs font-semibold text-gray-700">Strengths</label>
                           <input

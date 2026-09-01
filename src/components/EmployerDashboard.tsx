@@ -44,12 +44,12 @@ export const EmployerDashboard: React.FC<EmployerDashboardProps> = ({
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-20 pb-16">
-      <main className="max-w-[1280px] mx-auto px-4 md:px-12 w-full">
+    <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] font-['Hanken_Grotesk',_sans-serif] pt-[4.5rem] sm:pt-20 pb-20 sm:pb-16">
+      <main className="max-w-[1280px] mx-auto px-3 sm:px-4 md:px-12 w-full">
 
         {/* ── Page Header ─────────────────────────────────── */}
         <div className="mb-8">
-          <h1 className="text-[32px] md:text-[48px] font-bold text-[#001e40] mb-2 leading-[40px] md:leading-[56px] tracking-[-0.02em]">
+          <h1 className="text-2xl sm:text-[32px] md:text-[48px] font-bold text-[#001e40] mb-2 leading-tight sm:leading-[40px] md:leading-[56px] tracking-[-0.02em]">
             Company Dashboard
           </h1>
           <p className="text-lg text-[#43474f]">
@@ -58,9 +58,9 @@ export const EmployerDashboard: React.FC<EmployerDashboardProps> = ({
         </div>
 
         {/* ── Metrics Row ─────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
           {/* Metric 1: Total Applications Received */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-[#d5e3ff] rounded-lg text-[#1f477b]">
                 <Users className="w-7 h-7" />
@@ -70,29 +70,29 @@ export const EmployerDashboard: React.FC<EmployerDashboardProps> = ({
               </span>
             </div>
             <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Total Applications Received</p>
-            <p className="text-[32px] font-semibold text-[#191c1e] leading-[40px]">{totalApplications}</p>
+            <p className="text-2xl sm:text-[32px] font-semibold text-[#191c1e] leading-[32px] sm:leading-[40px]">{totalApplications}</p>
           </div>
 
           {/* Metric 2: Active Postings */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-[#ffdcc2] rounded-lg text-[#2e1500]">
                 <Building2 className="w-7 h-7" />
               </div>
             </div>
             <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">Active Postings</p>
-            <p className="text-[32px] font-semibold text-[#191c1e] leading-[40px]">{activePostings}</p>
+            <p className="text-2xl sm:text-[32px] font-semibold text-[#191c1e] leading-[32px] sm:leading-[40px]">{activePostings}</p>
           </div>
 
           {/* Metric 3: AI Shortlisted Candidates */}
-          <div className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">
               <div className="p-3 bg-[#e0e3e5] rounded-lg text-[#43474f]">
                 <Sparkles className="w-7 h-7" />
               </div>
             </div>
             <p className="text-sm font-semibold text-[#43474f] mb-1 font-['Public_Sans']">AI Shortlisted Candidates</p>
-            <p className="text-[32px] font-semibold text-[#191c1e] leading-[40px]">{aiShortlistedCount}</p>
+            <p className="text-2xl sm:text-[32px] font-semibold text-[#191c1e] leading-[32px] sm:leading-[40px]">{aiShortlistedCount}</p>
           </div>
         </div>
 
@@ -113,7 +113,7 @@ export const EmployerDashboard: React.FC<EmployerDashboardProps> = ({
               {postings.map(posting => (
                 <div
                   key={posting.id}
-                  className="bg-white border border-[#c3c6d1] rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="bg-white border border-[#c3c6d1] rounded-xl p-4 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">

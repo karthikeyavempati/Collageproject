@@ -48,14 +48,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   });
 
   return (
-    <div className="relative min-h-screen text-gray-900 selection:bg-orange-100 selection:text-orange-900 pt-24 pb-24 md:pb-16 overflow-x-hidden"
+    <div className="relative min-h-screen text-gray-900 selection:bg-orange-100 selection:text-orange-900 pt-20 sm:pt-24 pb-24 md:pb-16 overflow-x-hidden"
       style={{ background: 'linear-gradient(160deg, #fff7ed 0%, #f9fafb 40%, #f0fdf4 100%)' }}>
 
       {/* ── Tricolor top stripe ─────────────────────────────── */}
       <TricolorBar className="h-1.5 fixed top-1 left-0 right-0 z-[55]" />
 
       {/* ═══════════════ HERO SECTION ═══════════════ */}
-      <section className="relative flex flex-col justify-center px-4 md:px-16 py-12 md:py-16 max-w-7xl mx-auto">
+      <section className="relative flex flex-col justify-center px-4 sm:px-6 md:px-16 py-8 sm:py-12 md:py-16 max-w-7xl mx-auto">
         {/* Subtle tricolor radial blobs in background */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full opacity-20"
@@ -159,20 +159,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* Tricolor top border */}
         <TricolorBar className="h-1" />
         <div className="py-12 bg-white">
-          <div className="max-w-7xl mx-auto px-4 md:px-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-16 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {/* Stat 1 – Saffron accent */}
             <div className="flex flex-col items-center md:items-start px-6 border-l-4 border-[#FF9933] py-2">
-              <span className="text-4xl lg:text-5xl font-black mb-1" style={{ color: '#FF9933' }}>12,500+</span>
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black mb-1" style={{ color: '#FF9933' }}>12,500+</span>
               <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Verified Placements</span>
             </div>
             {/* Stat 2 – Blue accent */}
             <div className="flex flex-col items-center md:items-start px-6 border-l-4 border-[#003580] py-2">
-              <span className="text-4xl lg:text-5xl font-black mb-1" style={{ color: '#003580' }}>500+</span>
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black mb-1" style={{ color: '#003580' }}>500+</span>
               <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Top Indian Companies</span>
             </div>
             {/* Stat 3 – Green accent */}
             <div className="flex flex-col items-center md:items-start px-6 border-l-4 border-[#138808] py-2">
-              <span className="text-4xl lg:text-5xl font-black mb-1" style={{ color: '#138808' }}>100%</span>
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-black mb-1" style={{ color: '#138808' }}>100%</span>
               <span className="text-xs uppercase tracking-widest font-bold text-gray-500">Transparent Merit Matching</span>
             </div>
           </div>
@@ -215,9 +215,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6">
           {/* Feature 1 – Blue theme (India Navy) */}
-          <div className="col-span-1 md:col-span-8 bg-white border-t-4 border-[#003580] shadow-md rounded-2xl p-8 relative overflow-hidden group min-h-[300px] flex flex-col justify-end"
+          <div className="col-span-1 sm:col-span-8 bg-white border-t-4 border-[#003580] shadow-md rounded-2xl p-6 sm:p-8 relative overflow-hidden group min-h-[240px] sm:min-h-[300px] flex flex-col justify-end"
             style={{ borderColor: '#003580' }}>
             <div className="absolute top-0 right-0 w-32 h-32 rounded-bl-full opacity-5"
               style={{ background: '#003580' }} />
@@ -234,7 +234,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Feature 2 – Saffron theme */}
-          <div className="col-span-1 md:col-span-4 border-t-4 rounded-2xl p-8 flex flex-col justify-between min-h-[300px]"
+          <div className="col-span-1 sm:col-span-4 border-t-4 rounded-2xl p-6 sm:p-8 flex flex-col justify-between min-h-[240px] sm:min-h-[300px]"
             style={{ background: 'linear-gradient(160deg, #FFF3E0, #FFECD2)', borderColor: '#FF9933' }}>
             <div>
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center mb-6 border-2 shadow-sm"
@@ -255,7 +255,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           {/* Feature 3 – Green theme (full width) */}
-          <div className="col-span-1 md:col-span-12 bg-white border-t-4 shadow-md rounded-2xl p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8"
+          <div className="col-span-1 sm:col-span-12 bg-white border-t-4 shadow-md rounded-2xl p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8"
             style={{ borderColor: '#138808' }}>
             <div className="max-w-xl">
               <div className="w-12 h-12 rounded-full flex items-center justify-center mb-6 border-2"

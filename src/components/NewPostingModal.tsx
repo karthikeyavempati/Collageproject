@@ -35,8 +35,8 @@ export const NewPostingModal: React.FC<NewPostingModalProps> = ({ onClose, onSub
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div className="liquid-glass rounded-3xl p-6 md:p-8 max-w-xl w-full border border-white/20 shadow-2xl relative my-8">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-2xl flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div className="liquid-glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 max-w-xl w-full border border-white/20 shadow-2xl relative my-4 sm:my-8">
         <button
           onClick={onClose}
           className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
