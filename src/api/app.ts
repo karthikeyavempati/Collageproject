@@ -1100,6 +1100,33 @@ export function createApp() {
       return reply;
     };
 
+    let debugInfo: any = {};
+    const ai = getAiClient();
+
+    if (ai) {
+      try {
+        const response = await generateWithTimeout(() =>
+          ai.models.generateContent({
+            model: AI_MODEL,
+            contents: prompt,
+            config: {
+              systemInstruction:
+                "You are the PM Internship Scheme AI Match Assistant. You assist candidates, employers, and administrators on India's PM Internship Scheme portal. Provide concise, encouraging, and highly specific career and placement advice (2-3 sentences max). Emphasize scheme metrics, stipend details (₹20,000-₹25,000/mo), statement of purpose tips, or skill alignment.",
+              temperature: 0.7,
+            },
+          })
+        );
+
+        const reply = extractText(response) || ruleBasedFallback(prompt);
+        return res.json({ reply, source: "gemma" });
+      } catch (err: any) {
+        debugInfo.geminiError = err?.message || String(err);
+        console.error("AI Coach Gemini Error:", debugInfo.geminiError);
+      }
+    } else {
+      debugInfo.geminiError = "Gemini API key not configured";
+    }
+
     if (NVIDIA_API_ENABLED) {
       try {
         const response = await generateWithTimeout(() =>
@@ -1112,44 +1139,18 @@ export function createApp() {
         const reply = response || ruleBasedFallback(prompt);
         return res.json({ reply, source: "nvidia" });
       } catch (err: any) {
-        const errMsg = err?.message || String(err);
-        console.error("Nvidia AI Coach Error:", errMsg);
-        // If Gemini also won't work, return fallback with debug info
-        if (!getAiClient()) {
-          return res.json({
-            reply: ruleBasedFallback(prompt),
-            source: "fallback",
-            debug: { nvidiaError: errMsg, nvidiaEnabled: NVIDIA_API_ENABLED, geminiAvailable: false },
-          });
-        }
+        debugInfo.nvidiaError = err?.message || String(err);
+        console.error("Nvidia AI Coach Error:", debugInfo.nvidiaError);
       }
+    } else {
+      debugInfo.nvidiaError = "Nvidia API not enabled";
     }
 
-    const ai = getAiClient();
-
-    if (!ai) {
-      return res.json({ reply: ruleBasedFallback(prompt), source: "fallback" });
-    }
-
-    try {
-      const response = await generateWithTimeout(() =>
-        ai.models.generateContent({
-          model: AI_MODEL,
-          contents: prompt,
-          config: {
-            systemInstruction:
-              "You are the PM Internship Scheme AI Match Assistant. You assist candidates, employers, and administrators on India's PM Internship Scheme portal. Provide concise, encouraging, and highly specific career and placement advice (2-3 sentences max). Emphasize scheme metrics, stipend details (₹20,000-₹25,000/mo), statement of purpose tips, or skill alignment.",
-            temperature: 0.7,
-          },
-        })
-      );
-
-      const reply = extractText(response) || ruleBasedFallback(prompt);
-      return res.json({ reply, source: "gemma" });
-    } catch (err: any) {
-      console.error("AI Coach Error:", err?.message || err);
-      return res.json({ reply: ruleBasedFallback(prompt), source: "fallback" });
-    }
+    return res.json({ 
+      reply: ruleBasedFallback(prompt), 
+      source: "fallback",
+      debug: debugInfo
+    });
   });
 
   // 404 fallback for unmatched /api routes
