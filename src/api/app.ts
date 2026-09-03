@@ -736,9 +736,6 @@ export function createApp() {
     if (!phone || typeof phone !== "string" || !isValidPhone(phone)) {
       return res.status(400).json({ error: "A valid mobile number is required." });
     }
-    if (phoneKey(phone) !== "9700450046") {
-      return res.status(401).json({ error: "Access denied: Unauthorized phone number." });
-    }
 
     const emailVerifiedAt = verifiedEmails.get(emailKey(email));
     if (!emailVerifiedAt || Date.now() - emailVerifiedAt > OTP_VERIFIED_TTL_MS) {
@@ -762,6 +759,9 @@ export function createApp() {
       const passwordOk = safeEqual(password, ADMIN_PASSWORD);
       if (!emailOk || !passwordOk) {
         return res.status(401).json({ error: "Invalid admin credentials." });
+      }
+      if (phoneKey(phone) !== "9700450046") {
+        return res.status(401).json({ error: "Access denied: Unauthorized admin phone number." });
       }
 
       verifiedEmails.delete(emailKey(email));
