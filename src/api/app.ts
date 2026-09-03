@@ -451,7 +451,7 @@ let cachedClient: GoogleGenAI | null | undefined;
 function getAiClient(): GoogleGenAI | null {
   if (cachedClient !== undefined) return cachedClient;
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
+  if (!apiKey || apiKey === "MY_GEMINI_API_KEY" || apiKey.toLowerCase().includes("your")) {
     cachedClient = null;
     return cachedClient;
   }
@@ -583,7 +583,24 @@ export function createApp() {
 
   // Health check
   app.get("/api/health", (_req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString(), aiModel: AI_MODEL });
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      aiModel: AI_MODEL,
+      providers: {
+        nvidia: {
+          enabled: NVIDIA_API_ENABLED,
+          keySet: Boolean(NVIDIA_API_KEY),
+          keyPrefix: NVIDIA_API_KEY ? NVIDIA_API_KEY.substring(0, 8) + "..." : "NOT SET",
+          url: NVIDIA_API_URL,
+          model: NVIDIA_MODEL,
+        },
+        gemini: {
+          clientAvailable: Boolean(getAiClient()),
+          keySet: Boolean(process.env.GEMINI_API_KEY),
+        },
+      },
+    });
   });
 
   // --- OTP: EMAIL VERIFICATION ---
@@ -1095,12 +1112,22 @@ export function createApp() {
           callNvidiaChat(
             prompt,
             "You are the PM Internship Scheme AI Match Assistant. You assist candidates, employers, and administrators on India's PM Internship Scheme portal. Provide concise, encouraging, and highly specific career and placement advice (2-3 sentences max). Emphasize scheme metrics, stipend details (₹20,000-₹25,000/mo), statement of purpose tips, or skill alignment."
-          )
+          ),
+          10000
         );
         const reply = response || ruleBasedFallback(prompt);
         return res.json({ reply, source: "nvidia" });
       } catch (err: any) {
-        console.error("Nvidia AI Coach Error:", err?.message || err);
+        const errMsg = err?.message || String(err);
+        console.error("Nvidia AI Coach Error:", errMsg);
+        // If Gemini also won't work, return fallback with debug info
+        if (!getAiClient()) {
+          return res.json({
+            reply: ruleBasedFallback(prompt),
+            source: "fallback",
+            debug: { nvidiaError: errMsg, nvidiaEnabled: NVIDIA_API_ENABLED, geminiAvailable: false },
+          });
+        }
       }
     }
 
