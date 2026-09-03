@@ -505,11 +505,8 @@ async function callNvidiaChat(prompt: string, systemInstruction: string): Promis
         { role: "system", content: systemInstruction },
         { role: "user", content: prompt },
       ],
-      chat_template_kwargs: {
-        enable_thinking: true
-      },
       temperature: 0.7,
-      max_tokens: 16384,
+      max_tokens: 512,
     }),
   });
 
@@ -532,11 +529,8 @@ async function callNvidiaCompletion(prompt: string, temperature = 0.2, maxTokens
     body: JSON.stringify({
       model: NVIDIA_MODEL,
       messages: [{ role: "user", content: prompt }],
-      chat_template_kwargs: {
-        enable_thinking: true
-      },
       temperature,
-      max_tokens: 16384,
+      max_tokens: maxTokens,
     }),
   });
 
@@ -1113,7 +1107,7 @@ export function createApp() {
             prompt,
             "You are the PM Internship Scheme AI Match Assistant. You assist candidates, employers, and administrators on India's PM Internship Scheme portal. Provide concise, encouraging, and highly specific career and placement advice (2-3 sentences max). Emphasize scheme metrics, stipend details (₹20,000-₹25,000/mo), statement of purpose tips, or skill alignment."
           ),
-          10000
+          25000
         );
         const reply = response || ruleBasedFallback(prompt);
         return res.json({ reply, source: "nvidia" });
