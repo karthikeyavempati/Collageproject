@@ -32,7 +32,7 @@ const IS_PRODUCTION = process.env.NODE_ENV === "production";
 // through the *same* Gemini API endpoint/SDK as Gemini models, using the
 // same GEMINI_API_KEY. No separate provider or SDK is required.
 //   https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api
-const AI_MODEL = process.env.GEMMA_MODEL || "gemini-2.5-flash";
+const AI_MODEL = process.env.GEMMA_MODEL || "gemini-3.6-flash";
 
 // Nvidia NIM / OpenAI-compatible config
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || process.env.GROQ_API_KEY;
