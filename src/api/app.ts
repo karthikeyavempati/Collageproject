@@ -411,7 +411,7 @@ function emailKey(email: string): string {
 }
 
 function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(crypto.randomInt(100000, 1_000_000));
 }
 
 // Periodic sweep so long-running processes (local `npm run dev`/`npm start`)
@@ -612,7 +612,7 @@ export function createApp() {
     return res.json({
       message: `A 6-digit verification code was sent to ${email}. Please check your email inbox.`,
       expiresInSeconds: OTP_TTL_MS / 1000,
-      smsSent: true,
+      emailSent: true,
     });
   });
 
