@@ -386,7 +386,7 @@ function phoneKey(phone: string): string {
 // Simple password-strength check (used for signup only; admin credentials
 // come from environment configuration and aren't user-chosen here).
 function isValidPassword(password: string): boolean {
-  return typeof password === "string" && password.length >= 8;
+  return typeof password === "string" && password.length >= 12;
 }
 
 // ---------------------------------------------------------------------------
@@ -773,7 +773,7 @@ export function createApp() {
         return res.status(409).json({ error: "An account with this email already exists for this role. Please sign in instead." });
       }
       if (!isValidPassword(password)) {
-        return res.status(400).json({ error: "Password must be at least 8 characters long." });
+        return res.status(400).json({ error: "Password must be at least 12 characters long." });
       }
       const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
       const name =
