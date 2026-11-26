@@ -10,11 +10,7 @@ export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ onClose, userName 
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: `Namaste ${userName || 'Student'}! I am your PM Internship Scheme AI Match Assistant. I've analyzed your academic records and resume against over 80+ corporate openings.`
-    },
-    {
-      sender: 'ai',
-      text: "💡 Top Recommendation: Your match score for Product Design and Technical PM roles is 98%. Adding 'System Architecture' or 'SQL' tags will boost your placement rate for Tech Mahindra and Strategic roles!"
+      text: `Namaste ${userName || 'Student'}! Ask me for internship, resume, or placement guidance.`
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
@@ -36,19 +32,19 @@ export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ onClose, userName 
         body: JSON.stringify({ prompt: userText })
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(prev => [...prev, { sender: 'ai', text: data.reply }]);
-      } else {
-        setMessages(prev => [...prev, { 
-          sender: 'ai', 
-          text: "Based on PM Internship Scheme guidelines, highlighting quantifiable achievements in your Statement of Purpose (SOP) increases shortlisting probability by up to 2.4x!" 
+      const data = await response.json();
+      if (!response.ok || data.source === 'fallback' || typeof data.reply !== 'string') {
+        setMessages(prev => [...prev, {
+          sender: 'ai',
+          text: data.error || 'AI Coach is unavailable. Check the provider setup in Vercel and try again.'
         }]);
+      } else {
+        setMessages(prev => [...prev, { sender: 'ai', text: data.reply }]);
       }
-    } catch (err) {
-      setMessages(prev => [...prev, { 
-        sender: 'ai', 
-        text: "Based on PM Internship Scheme guidelines, candidates with verified academic transcripts and clear skill tags receive priority review." 
+    } catch {
+      setMessages(prev => [...prev, {
+        sender: 'ai',
+        text: 'Could not reach the AI Coach. Please try again in a moment.'
       }]);
     } finally {
       setIsTyping(false);
