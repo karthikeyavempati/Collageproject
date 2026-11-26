@@ -1,22 +1,18 @@
 # PM Internship Scheme - Full Stack App
 
-A React (Vite) frontend with an Express API backend, AI-powered by **Gemma 4
-31B IT** (`gemma-4-31b-it`), deployable to Vercel.
+A React (Vite) frontend with an Express API backend, deployable to Vercel.
+The AI Coach and resume parser can use Gemini or an OpenAI-compatible provider.
 
 ## How the AI works
 
-Gemma 4 is Google DeepMind's open-weight model family, but it's served
-through the **same Gemini API endpoint and `@google/genai` SDK** as Gemini
-models - so it uses your existing `GEMINI_API_KEY`, no separate provider,
-account, or SDK needed. The backend calls `gemma-4-31b-it` for:
+- `/api/ai-coach` tries Gemini first, then the configured NVIDIA-compatible
+  endpoint, then returns a rule-based reply.
+- `/api/parse-resume` tries the configured NVIDIA-compatible endpoint first,
+  then Gemini, then uses heuristic parsing.
 
-- `/api/ai-coach` - the AI Match Coach chat drawer
-- `/api/parse-resume` - resume parsing on the login/signup screen
-
-Both routes are wrapped in try/catch with **rule-based fallback replies**, so
-if the API key is missing, the model call times out, or Gemma returns
-something unparseable, the endpoint still responds successfully (200) instead
-of crashing or hanging - the UI degrades gracefully instead of breaking.
+Set provider keys in the environment. A successful build or health check does
+not guarantee that a live model request will succeed; verify each provider
+with a safe test prompt and a non-personal sample resume.
 
 ## Project structure
 
@@ -34,14 +30,16 @@ vercel.json           # Vercel build + routing config
 **Prerequisites:** Node.js 18+
 
 1. `npm install`
-2. Copy `.env.example` to `.env` and set either:
-   - `GEMINI_API_KEY` to your Google AI Studio key (for Gemma 4), or
-   - `GORQ_API_KEY` to your Gorq AI key (for Gorq-powered responses).
-3. `npm run dev`
-4. Open http://localhost:3000
+2. Copy `.env.example` to a gitignored `.env` file.
+3. Set `GEMINI_API_KEY` and/or `NVIDIA_API_KEY`. For email verification,
+   configure either `SMTP_USER` + `SMTP_PASS` or `RESEND_API_KEY`.
+4. Set `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `JWT_SECRET` to private,
+   unique values before testing the admin and session flows.
+5. `npm run dev`
+6. Open http://localhost:3000
 
-Without any AI key set, the app still runs fully - the `/api/ai-coach` route
-uses a rule-based fallback response instead of calling an external model.
+Without provider keys, AI routes use fallback responses. Email OTP will not
+work until an email provider is configured.
 
 ## Deploy to Vercel
 
@@ -50,11 +48,12 @@ uses a rule-based fallback response instead of calling an external model.
    config from `vercel.json` (Vite build → `dist/`, `api/index.ts` as a
    serverless function).
 3. In the Vercel project's **Settings → Environment Variables**, add:
-   - `GEMINI_API_KEY` - your Google AI Studio key for Gemma 4 (optional)
-   - `GORQ_API_KEY` - your Gorq AI key (optional)
+   - `GEMINI_API_KEY` and/or `NVIDIA_API_KEY` - AI provider keys
+   - `SMTP_USER` + `SMTP_PASS` or `RESEND_API_KEY` - email OTP delivery
+   - `JWT_SECRET` - stable session signing secret
    - `ADMIN_EMAIL` and `ADMIN_PASSWORD` - required to enable administrator
-     login; configure them as private Vercel environment variables. There is no
-     default administrator credential. Use a unique password of at least 12 characters.
+     login; configure private, unique values. There is no default administrator
+     credential. Use a unique password of at least 12 characters.
 4. Deploy. Vercel serves the built frontend as static assets and routes
    `/api/*` requests to the serverless function.
 
@@ -85,7 +84,9 @@ localized change.
 | Method | Path | Description |
 |---|---|---|
 | GET | `/api/health` | Health check |
-| GET/POST | `/api/login`, `/api/login/rate-limit-status`, `/api/login/reset-rate-limit` | Auth + rate limiting |
+| POST | `/api/otp/send`, `/api/otp/verify` | Email verification |
+| POST / GET | `/api/login`, `/api/login/rate-limit-status` | Auth + rate limiting |
+| POST | `/api/login/reset-rate-limit` | Local development only |
 | GET/POST | `/api/internships`, `/api/internships/:id`, `/api/internships/:id/apply` | Internship listings & applications |
 | GET/PATCH | `/api/candidates`, `/api/candidates/:id/status` | Candidate pipeline |
 | GET/POST | `/api/state-distributions`, `/api/verification-batches`, `/api/verification-batches/:id/approve` | Admin analytics |
