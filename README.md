@@ -52,8 +52,9 @@ uses a rule-based fallback response instead of calling an external model.
 3. In the Vercel project's **Settings → Environment Variables**, add:
    - `GEMINI_API_KEY` - your Google AI Studio key for Gemma 4 (optional)
    - `GORQ_API_KEY` - your Gorq AI key (optional)
-   - `ADMIN_EMAIL` / `ADMIN_PASSWORD` - optional, overrides the default admin
-     login
+   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` - required to enable administrator
+     login; configure them as private Vercel environment variables. There is no
+     default administrator credential. Use a unique password of at least 12 characters.
 4. Deploy. Vercel serves the built frontend as static assets and routes
    `/api/*` requests to the serverless function.
 
