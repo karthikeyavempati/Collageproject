@@ -202,17 +202,10 @@ function requireAuth(allowedRoles?: PortalRole[]) {
 // ---------------------------------------------------------------------------
 // ADMIN CREDENTIALS
 // ---------------------------------------------------------------------------
-// There is exactly ONE administrator identity for this portal. It is fixed
-// to the owner's real account below. No other email/password combination -
-// however it's submitted - is ever accepted for the "admin" role; the check
-// further down is a strict equality match against these two values only.
-//
-// To change the admin identity (e.g. for a different deployment), set
-// ADMIN_EMAIL / ADMIN_PASSWORD as environment variables - they override
-// these defaults. Do not remove the defaults from source without setting
-// the env vars first, or admin login will be disabled (see the check below).
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "venkatakarthikeyavempati@gmail.com";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "rohini123";
+// The administrator identity must be configured in the hosting environment.
+// Empty values intentionally disable admin login until secure credentials are set.
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.trim() || "";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 /** Constant-time string comparison to avoid leaking info via timing. */
 function safeEqual(a: string, b: string): boolean {
@@ -260,9 +253,6 @@ const usersStore = new Map<string, StoredUser>([
   }],
   [userKey("employer", "employer@example.com"), {
     id: "usr-emp-01", email: "employer@example.com", passwordHash: defaultPasswordHash, role: "employer", name: "Tech Mahindra"
-  }],
-  [userKey("admin", ADMIN_EMAIL || "venkatakarthikeyavempati@gmail.com"), {
-    id: "usr-adm-01", email: ADMIN_EMAIL || "venkatakarthikeyavempati@gmail.com", passwordHash: defaultPasswordHash, role: "admin", name: "System Admin"
   }]
 ]);
 
@@ -575,25 +565,12 @@ export function createApp() {
   // can't spoof it to dodge rate limiting.
   app.set("trust proxy", 1);
 
-  // Health check
+  // Public health check: report service availability without exposing
+  // provider names, model configuration, or secret-related metadata.
   app.get("/api/health", (_req, res) => {
     res.json({
       status: "ok",
       timestamp: new Date().toISOString(),
-      aiModel: AI_MODEL,
-      providers: {
-        nvidia: {
-          enabled: NVIDIA_API_ENABLED,
-          keySet: Boolean(NVIDIA_API_KEY),
-          keyPrefix: NVIDIA_API_KEY ? NVIDIA_API_KEY.substring(0, 8) + "..." : "NOT SET",
-          url: NVIDIA_API_URL,
-          model: NVIDIA_MODEL,
-        },
-        gemini: {
-          clientAvailable: Boolean(getAiClient()),
-          keySet: Boolean(process.env.GEMINI_API_KEY),
-        },
-      },
     });
   });
 
