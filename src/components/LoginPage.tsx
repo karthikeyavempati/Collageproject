@@ -966,7 +966,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-gray-700">Account Password</label>
-                  <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Reset link requested! Please check your email inbox.'); }} className="text-[11px] text-sky-400 hover:underline">
+                  <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Password reset is not available yet.'); }} className="text-[11px] text-sky-400 hover:underline">
                     Forgot password?
                   </a>
                 </div>
