@@ -1126,10 +1126,15 @@ export function createApp() {
       debugInfo.nvidiaError = "Nvidia API not enabled";
     }
 
-    return res.json({ 
-      reply: ruleBasedFallback(prompt), 
-      source: "fallback",
-      debug: debugInfo
+    const providersConfigured = Boolean(ai || NVIDIA_API_ENABLED);
+    if (!providersConfigured) {
+      return res.status(503).json({
+        error: "AI Coach is not configured. Add a Gemini or NVIDIA API key in Vercel project settings.",
+      });
+    }
+
+    return res.status(503).json({
+      error: "AI Coach could not reach its provider. Check the provider settings and Vercel function logs.",
     });
   });
 
