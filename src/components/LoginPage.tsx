@@ -975,12 +975,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
+                    minLength={isSignUp ? 12 : undefined}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     disabled={rateLimitInfo.isBlocked}
                     className="w-full bg-white border border-gray-300 rounded-xl pl-10 pr-10 py-3 text-sm text-gray-900 placeholder:text-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all disabled:opacity-50"
                   />
+                  {isSignUp && (
+                    <p className="mt-1 text-xs text-gray-600">
+                      Use at least 12 characters for your password.
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
